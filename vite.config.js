@@ -10,6 +10,23 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  server: {
+    proxy: {
+      '/wechatapi': {
+        target: 'http://wechat.zhjgongjiao.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/wechatapi/, ''),
+      },
+      '/websiteapi': {
+        target: 'http://zhjgongjiao.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/websiteapi/, ''),
+        headers: {
+          Host: 'zhjgongjiao.com'
+        }
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

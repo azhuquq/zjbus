@@ -26,5 +26,7 @@ export const getNoticeList = (res = {}) => {
 }
 
 export const getNoticeDetail = (res = {}) => {
-    return webHttp.get(Api.noticeDetail, res)
+    return webHttp.get(Api.noticeDetail, {
+        params: res,
+    })
 }

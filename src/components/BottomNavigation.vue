@@ -1,17 +1,13 @@
 <template>
     <v-layout class="overflow-visible" style="height: 56px;">
-        <v-bottom-navigation 
-            color="primary" 
-            mode="shift"
-            v-model="value"
-        >
+        <v-bottom-navigation color="primary" mode="shift" v-model="value">
             <v-btn @click="navigateTo('/')" value="/">
-                <v-icon>ri:home-line</v-icon>
-                <span>首页</span>
-            </v-btn>
-            <v-btn @click="navigateTo('/route')" value="/route">
                 <v-icon>ri:route-line</v-icon>
                 <span>路线</span>
+            </v-btn>
+            <v-btn @click="navigateTo('/search')" value="/search">
+                <v-icon>ri:search-line</v-icon>
+                <span>搜索</span>
             </v-btn>
             <v-btn @click="navigateTo('/notice')" value="/notice">
                 <v-icon>ri:sticky-note-line</v-icon>

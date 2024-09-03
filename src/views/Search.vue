@@ -1,26 +1,27 @@
 <template>
     <div id="app">
-        <div class="p-2">
-            <v-text-field
-                v-model="searchQuery"
-                ref="searchField"
-                label="线路名称"
-                hide-details
-                class="my-2"
-            />
+        <v-app-bar elevation="1">
+            <v-app-bar-title>搜索线路</v-app-bar-title>
+        </v-app-bar>
+        <div class="">
+            <v-text-field v-model="searchQuery" ref="searchField" label="线路名称" hide-details />
+            <NetworkErr v-if="networkErr" class="my-2" />
             <div v-if="searchQuery && searchQuery != ''" class="flex flex-col gap-4 mt-2">
                 <div class="w-full flex justify-center mt-16" v-if="loadingStatus === true">
                     <v-progress-circular indeterminate />
                 </div>
+                <div v-else-if="routeData.length === 0">
+                    <v-empty-state icon="ri:inbox-line" title="找不到结果"></v-empty-state>
+                </div>
                 <div v-else v-for="(item, index) in routeData" :key="index">
-                    <v-card>
+                    <v-card @click="navigateToRouteDetail(item)">
                         <v-card-text>
                             <div class="flex flex-row gap-2 align-center justify-between">
                                 <div>
-                                    <div class="text-xl">{{ item.roadname }} </div>
+                                    <div class="text-xl font-bold">{{ item.roadname }} </div>
                                 </div>
                                 <div class="flex flex-col text-right">
-                                    <div class="text-lg">
+                                    <div class="text-base">
                                         {{ item.firstsite }}
                                         <v-icon icon="ri:arrow-right-line" />
                                         {{ item.lastsite }}
@@ -38,7 +39,7 @@
                     </v-card>
                 </div>
             </div>
-            <div v-else class="w-full text-center">
+            <div v-else class="w-full text-center mt-4">
                 输入线路名称以开始搜索
             </div>
         </div>
@@ -47,9 +48,12 @@
 
 <script>
 import { searchRoute } from '@/api/wechatApi'
+import NetworkErr from '@/components/NetworkErr.vue'
 export default {
+    components: { NetworkErr },
     data() {
         return {
+            networkErr: false,
             searchQuery: '',
             routeData: [],
             loadingStatus: false
@@ -71,12 +75,21 @@ export default {
     },
     methods: {
         fetchSearchData() {
+            this.networkErr = false
             this.loadingStatus = true
             searchRoute({ scontent: this.searchQuery }).then(res => {
                 console.log("🚩 ~ searchRoute ~ res 👇\n", res)
                 this.routeData = res.lineinfos
+            }).catch(error => {
+                this.networkErr = true
             }).finally(() => {
                 this.loadingStatus = false
+            })
+        },
+        navigateToRouteDetail(item) {
+            this.$router.push({
+                path: '/routedetail',
+                query: { id: item.roadid, dir: item.roadstatus }
             })
         }
     }

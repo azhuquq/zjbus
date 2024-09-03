@@ -1,5 +1,5 @@
 <template>
-    <v-layout class="overflow-visible" style="height: 56px;">
+    <v-layout class="overflow-visible">
         <v-bottom-navigation color="primary" mode="shift" v-model="value">
             <v-btn @click="navigateTo('/')" value="/">
                 <v-icon>ri:route-line</v-icon>

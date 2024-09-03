@@ -1,6 +1,14 @@
 <template>
     <div id="app">
-        <v-infinite-scroll :items="noticeItems" :onLoad="onLoad" class="flex flex-col px-2 w-full gap-4">
+        <v-app-bar elevation="1">
+            <v-app-bar-title>通知&公告</v-app-bar-title>
+            <template v-slot:append>
+                <v-btn icon="ri:information-line" @click="aboutDialog = true"></v-btn>
+            </template>
+        </v-app-bar>
+        <NetworkErr v-if="networkErr" />
+        <v-infinite-scroll :items="noticeItems" :onLoad="onLoad" class="flex flex-col w-full gap-4"
+            style="margin-top: -16px !important;">
             <template v-for="(item, index) in noticeItems" :key="item.id">
                 <v-card :title="item.name" :subtitle="item.year + item.day" @click="handleCardClick(item)" ref="card" />
             </template>
@@ -18,14 +26,34 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+        <!-- 懒得连自己的后端服务器/serverless，直接写死算了 -->
+        <v-dialog v-model="aboutDialog">
+            <v-card title="关于“湛江实时公交查询”项目" subtitle="阿朱">
+                <v-card-text class="flex flex-col gap-4">
+                    <div>本项目由阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify等框架开发</div>
+                    <div>阿朱官网: <a href="http://azhuquq.com">azhuquq.com</a></div>
+                    <div>微信: azhuquq (是本人，欢迎交流！)</div>
+                    <div>商务合作: i@azhuquq.com</div>
+                    <div>所有数据均来源于“湛江公交”微信公众号、“湛江市公共交通有限公司”网站等公开数据，阿朱不对数据真实性及完整性负责。</div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn color="blue" text @click="aboutDialog = false">关闭</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
 <script>
 import { getNoticeIndex, getNoticeDetail } from '@/api/webApi'
+import NetworkErr from '@/components/NetworkErr.vue'
 export default {
+    components: { NetworkErr },
     data() {
         return {
+            networkErr: false,
+            aboutDialog: false,
+            toggle_none: null,
             loadingStatus: {
                 list: false,
                 detail: false
@@ -46,12 +74,15 @@ export default {
         },
         getDetail(item) {
             this.loadingStatus.detail = true
+            this.networkErr = false
             getNoticeDetail({
                 id: item.id
             }).then(res => {
                 this.detailData.title = res.data.name
                 this.detailData.date = res.data.publish_date
                 this.detailData.content = res.data.content
+            }).catch(err => {
+                this.networkErr = true
             }).finally(res => {
                 this.loadingStatus.detail = false
             })
@@ -67,6 +98,7 @@ export default {
             if (this.loadingStatus.list === true) {
                 return
             }
+            this.networkErr = false
             this.loadingStatus.list = true
             try {
                 const res = await getNoticeIndex({ type: 9, page: this.page })
@@ -80,6 +112,7 @@ export default {
                     done('error') // 加载失败
                 }
             } catch (error) {
+                this.networkErr = true
                 console.error("加载页面数据时出错:", error)
                 done('error') // 通知加载失败
             } finally {

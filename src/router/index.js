@@ -5,15 +5,20 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('@/views/Home.vue')
+      component: () => import('@/views/Home.vue'),
     },
     {
       path: '/search',
-      component: () => import('@/views/Search.vue')
+      component: () => import('@/views/Search.vue'),
     },
     {
       path: '/notice',
-      component: () => import('@/views/Notice.vue')
+      component: () => import('@/views/Notice.vue'),
+    },
+    {
+      path: '/routedetail',
+      component: () => import('@/views/RouteDetail.vue'),
+      meta: { title: '路线详情' }
     }
   ]
 })

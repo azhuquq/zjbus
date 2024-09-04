@@ -74,10 +74,10 @@ export default {
         }
     },
     methods: {
-        fetchSearchData() {
+        async fetchSearchData() {
             this.networkErr = false
             this.loadingStatus = true
-            searchRoute({ scontent: this.searchQuery }).then(res => {
+            await searchRoute({ scontent: this.searchQuery }).then(res => {
                 console.log("🚩 ~ searchRoute ~ res 👇\n", res)
                 this.routeData = res.lineinfos
             }).catch(error => {

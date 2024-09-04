@@ -17,7 +17,7 @@
                     <v-btn icon="ri:arrow-left-right-line" @click="changeDirection()"></v-btn>
                 </template>
             </v-app-bar>
-            <NetworkErr v-if="networkErr" />
+            <NetworkErr v-if="networkErr" class="my-2" />
             <div v-if="routeinfo && routeinfo.busstation" class="flex flex-col gap-4">
                 <v-card class="bg-indigo">
                     <v-card-text>
@@ -143,10 +143,10 @@ export default {
         back() {
             this.$router.back()
         },
-        fetchLive() {
+        async fetchLive() {
             if (this.routeinfo && this.routeinfo != {}) {
                 this.isLoading = true
-                getBusLiveStatus({
+                await getBusLiveStatus({
                     routeid: this.routeid
                 }).then(res => {
                     console.log("🚩 ~ fetchLive ~ res 👇\n", res)
@@ -170,7 +170,7 @@ export default {
         },
         // 获取当前站点的车辆信息
         getBusForStation(item) {
-            console.log("🚩 ~ getBusForStation ~ stationno,stationname 👇", item)
+            // console.log("🚩 ~ getBusForStation ~ stationno,stationname 👇", item)
             const adjustedStationNo = Number(item.stationno) - 1 // 后端的 stationno 比前端小 1，所以减去 1
             return this.liveData.map(bus => ({
                 ...bus,

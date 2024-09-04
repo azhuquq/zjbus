@@ -10,7 +10,7 @@
         },
         {
             "source": "/webimg/:path*",
-            "destination": "http://www.zhjgongjiao.com/uploads/:path*"
+            "destination": "http://www.zhjgongjiao.com/uploads/:path*"  
         }
     ],
     "headers": [

@@ -32,7 +32,7 @@
                                     首班{{ routeinfo.firsttime ? routeinfo.firsttime : '--:--' }}
                                 </div>
                                 <div>
-                                    票价{{ routeinfo.ticketprice }}元
+                                    {{ routeinfo?.ticketprice == '分段收费' ? '分段收费' : `票价${routeinfo.ticketprice}元` }}
                                 </div>
                                 <div>
                                     末班{{ routeinfo.lasttime ? routeinfo.lasttime : '--:--' }}

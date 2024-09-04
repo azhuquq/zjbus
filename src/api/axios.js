@@ -12,7 +12,7 @@ const wechatHttp = axios.create({
 // 创建 Web API 的 axios 实例
 const webHttp = axios.create({
     baseURL: import.meta.env.VITE_BASE_API_WEB || '',
-    timeout: 10000, // 请求超时时间
+    timeout: 20000, // 请求超时时间
 })
 
 // 请求拦截器

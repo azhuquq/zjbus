@@ -17,7 +17,7 @@
                     <v-btn icon="ri:arrow-left-right-line" @click="changeDirection()"></v-btn>
                 </template>
             </v-app-bar>
-            <NetworkErr v-if="networkErr" class="my-2" />
+            <NetworkErr v-if="networkErr.info || networkErr.live" class="my-2" />
             <div v-if="routeinfo && routeinfo.busstation" class="flex flex-col gap-4">
                 <v-card class="bg-indigo">
                     <v-card-text>
@@ -42,7 +42,7 @@
                     </v-card-text>
                 </v-card>
                 <v-alert icon="ri:flag-2-line" :text="`下一趟车将在${nextStartTime}开出`" type="success"
-                    v-if="nextStartTime && nextStartTime != ''" />
+                    v-if="nextStartTime && nextStartTime != ''"></v-alert>
                 <!-- {{ routeinfo }} -->
                 <v-card v-for="item in routeinfo.busstation" :key="item.stationno">
                     <v-card-text>
@@ -54,9 +54,9 @@
                                 </div>
                             </div>
                             <v-divider class="my-2" />
+                            {{ item }}
                             <div v-if="getBusForStation(item) && getBusForStation(item).length > 0">
                                 <!-- <div v-if="true"> -->
-                                <!-- {{ item.stationname }} -->
                                 <div v-for="bus in getBusForStation(item)" :key="bus.busplate"
                                     class="flex items-center gap-4">
                                     <v-icon>ri:bus-line</v-icon>
@@ -74,7 +74,7 @@
                     </v-card-text>
                 </v-card>
             </div>
-            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-14 right-20" @click="fetchLive"></v-fab>
+            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-14 right-20" @click="refresh()"></v-fab>
         </div>
     </template>
 
@@ -85,20 +85,25 @@ export default {
     components: { NetworkErr },
     data() {
         return {
-            networkErr: false,
+            networkErr: {
+                info: false,
+                live: false
+            },
             isLoading: false,
             dir: '0',
             routeid: null, // 用于存储路由参数中的 routeid
             routeinfo: {},
             title: '', // 默认标题
             liveData: [],
-            nextPlanTime: '',
+            nextStartTime: '',
             intervalId: null // 用于存储定时器ID
         }
     },
     mounted() {
         this.routeid = this.$route.query.id
-        this.dir = this.$route.query.dir || '0'
+        if (this.$route.query.dir) {
+            this.dir = this.$route.query.dir
+        }
         this.fetchRouteDetail()
         this.intervalId = setInterval(() => {
             this.fetchLive()
@@ -117,17 +122,17 @@ export default {
         }
     },
     methods: {
-        fetchRouteDetail() {
-            this.networkErr = false
+        async fetchRouteDetail() {
+            this.networkErr.info = false
             this.isLoading = true
-            getRouteDetail({ routeid: this.routeid }).then(res => {
+            await getRouteDetail({ routeid: this.routeid }).then(res => {
                 // 使用 filter 筛选出 roadstatus 为 this.dir 的对象
                 this.routeinfo = res.lineinfos ? res.lineinfos.filter(route => route.roadstatus == this.dir)[0] : []
                 this.title = `${this.routeinfo.roadname}(开往${this.routeinfo.lastsite})`
                 this.fetchLive()
             }).catch(error => {
                 console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
-                this.networkErr = true
+                this.networkErr.info = true
             }).finally(() => {
                 this.isLoading = false
             })
@@ -138,6 +143,7 @@ export default {
             } else {
                 this.dir = '0'
             }
+
             this.fetchRouteDetail()
         },
         back() {
@@ -149,12 +155,14 @@ export default {
                 await getBusLiveStatus({
                     routeid: this.routeid
                 }).then(res => {
+                    this.networkErr.live = false
                     console.log("🚩 ~ fetchLive ~ res 👇\n", res)
+                    // 过滤掉 lastOutSiteMileage 为 0 的数据
+                    this.liveData = res.businfos.filter(bus => bus.lastOutSiteMileage !== "0")
                     this.setPlantime(res.nearPlanTime)
-                    this.liveData = res.businfos
                 }).catch(error => {
                     console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
-                    this.networkErr = true
+                    this.networkErr.live = true
                 }).finally(() => {
                     this.isLoading = false
                 })
@@ -162,14 +170,25 @@ export default {
         },
         setPlantime(data) {
             console.log("🚩 ~ setPlantime ~ data 👇\n", data)
-            if (data && data.length > 0) {
-                this.nextStartTime = data[this.dir] ? data[this.dir] : ''
+            // 检查数据是否有效，并且长度为2
+            if (data && data.length === 2) {
+                // 检查 routeinfo.roadstatus 的值是否为 '1' 或 '0'
+                console.log("🚩 ~ routeinfo.roadstatus 👇\n", this.routeinfo.roadstatus)
+                // 根据 routeinfo 的 roadstatus 来决定选择数组中的哪个值
+                const dirNumber = this.routeinfo.roadstatus === '1' ? 1 : 0
+                console.log("🚩 ~ dirNumber 👇\n", dirNumber)
+                // 根据 dirNumber 选择对应的发车时间
+                this.nextStartTime = data[dirNumber] ? data[dirNumber] : ''
+                // 输出最后选择的发车时间
+                console.log("🚩 ~ nextStartTime 👇\n", this.nextStartTime)
             } else {
+                console.log('无效的 nearPlanTime 数据')
                 this.nextStartTime = ''
             }
         },
         // 获取当前站点的车辆信息
         getBusForStation(item) {
+            // item为前端item
             // console.log("🚩 ~ getBusForStation ~ stationno,stationname 👇", item)
             const adjustedStationNo = Number(item.stationno) - 1 // 后端的 stationno 比前端小 1，所以减去 1
             return this.liveData.map(bus => ({
@@ -179,6 +198,13 @@ export default {
                 bus.stationno == String(adjustedStationNo) &&
                 bus.sitename == item.stationname
             )
+        },
+        refresh() {
+            if (this.networkErr.info == true) {
+                this.fetchRouteDetail()
+            } else {
+                this.fetchLive()
+            }
         }
 
     }

@@ -24,7 +24,7 @@
             ]
         },
         {
-            "source": "/uploads/:path*",
+            "source": "http://www.zhjgongjiao.com/uploads/:path*",
             "headers": [
                 {
                     "key": "Host",

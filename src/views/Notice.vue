@@ -78,6 +78,7 @@ export default {
             getNoticeDetail({
                 id: item.id
             }).then(res => {
+                console.log("🚩 ~ getDetail ~ res 👇\n", res)
                 this.detailData.title = res.data.name
                 this.detailData.date = res.data.publish_date
                 this.detailData.content = res.data.content

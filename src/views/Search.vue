@@ -49,6 +49,9 @@
 <script>
 import { searchRoute } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
+// 引入防抖函数
+import debounce from 'lodash/debounce'
+
 export default {
     components: { NetworkErr },
     data() {
@@ -67,11 +70,19 @@ export default {
     watch: {
         searchQuery(newQuery) {
             if (newQuery.trim() !== '') {
+                // 首次输入立即触发搜索
                 this.fetchSearchData()
+
+                // 后续输入使用防抖处理，避免频繁请求
+                this.debouncedFetchSearchData()
             } else {
                 this.routeData = []
             }
         }
+    },
+    created() {
+        // 创建防抖函数，避免频繁请求
+        this.debouncedFetchSearchData = debounce(this.fetchSearchData, 500)
     },
     methods: {
         async fetchSearchData() {

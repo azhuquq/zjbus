@@ -74,8 +74,7 @@
                     </v-card-text>
                 </v-card>
             </div>
-            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-14 right-20"
-                @click="fetchRouteDetail"></v-fab>
+            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-14 right-20" @click="fetchLive"></v-fab>
         </div>
     </template>
 
@@ -93,14 +92,29 @@ export default {
             routeinfo: {},
             title: '', // 默认标题
             liveData: [],
-            nextPlanTime: ''
+            nextPlanTime: '',
+            intervalId: null // 用于存储定时器ID
         }
     },
     mounted() {
         this.routeid = this.$route.query.id
         this.dir = this.$route.query.dir || '0'
         this.fetchRouteDetail()
-
+        this.intervalId = setInterval(() => {
+            this.fetchLive()
+        }, 7000)
+    },
+    beforeUnmount() {
+        // 在组件销毁时清除定时器
+        if (this.intervalId) {
+            clearInterval(this.intervalId)
+        }
+    },
+    unmounted() {
+        // 在组件销毁时清除定时器
+        if (this.intervalId) {
+            clearInterval(this.intervalId)
+        }
     },
     methods: {
         fetchRouteDetail() {
@@ -114,7 +128,7 @@ export default {
             }).catch(error => {
                 console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
                 this.networkErr = true
-            }).finally(res => {
+            }).finally(() => {
                 this.isLoading = false
             })
         },
@@ -131,12 +145,18 @@ export default {
         },
         fetchLive() {
             if (this.routeinfo && this.routeinfo != {}) {
+                this.isLoading = true
                 getBusLiveStatus({
                     routeid: this.routeid
                 }).then(res => {
                     console.log("🚩 ~ fetchLive ~ res 👇\n", res)
                     this.setPlantime(res.nearPlanTime)
                     this.liveData = res.businfos
+                }).catch(error => {
+                    console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
+                    this.networkErr = true
+                }).finally(() => {
+                    this.isLoading = false
                 })
             }
         },
@@ -163,4 +183,5 @@ export default {
 
     }
 }
+
 </script>

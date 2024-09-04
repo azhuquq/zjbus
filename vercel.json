@@ -10,7 +10,11 @@
         },
         {
             "source": "/webimg/:path*",
-            "destination": "http://www.zhjgongjiao.com/uploads/:path*"  
+            "destination": "http://www.zhjgongjiao.com/uploads/:path*"
+        },
+        {
+            "source": "/(.*)", // 这个规则用于处理前端路由
+            "destination": "/index.html"
         }
     ],
     "headers": [

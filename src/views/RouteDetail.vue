@@ -143,7 +143,7 @@ export default {
             } else {
                 this.dir = '0'
             }
-
+            this.nextStartTime = ''
             this.fetchRouteDetail()
         },
         back() {

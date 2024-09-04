@@ -54,7 +54,7 @@
                                 </div>
                             </div>
                             <v-divider class="my-2" />
-                            {{ item }}
+                            <!-- {{ item }} -->
                             <div v-if="getBusForStation(item) && getBusForStation(item).length > 0">
                                 <!-- <div v-if="true"> -->
                                 <div v-for="bus in getBusForStation(item)" :key="bus.busplate"

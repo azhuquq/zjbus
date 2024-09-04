@@ -28,7 +28,7 @@
         </v-dialog>
         <!-- 懒得连自己的后端服务器/serverless，直接写死算了 -->
         <v-dialog v-model="aboutDialog">
-            <v-card title="关于“湛江实时公交查询”项目" subtitle="阿朱">
+            <v-card title="关于“湛江实时公交查询”项目" subtitle="阿朱@2024-09-04">
                 <v-card-text class="flex flex-col gap-4">
                     <div>本项目由阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify、Vercel等框架开发</div>
                     <div>阿朱官网: <a href="http://azhuquq.com">azhuquq.com</a></div>

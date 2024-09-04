@@ -3,7 +3,7 @@
     <v-app>
       <v-main>
         <v-container fluid>
-          <RouterView @update:title="updateTitle" />
+          <RouterView />
         </v-container>
       </v-main>
       <v-footer app class="p-0">

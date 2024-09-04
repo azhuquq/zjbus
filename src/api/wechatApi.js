@@ -26,3 +26,15 @@ export const getRouteDetail = (res = {}) => {
         `params=${JSON.stringify(data)}`
     )
 }
+export const getBusLiveStatus = (res = {}) => {
+    const data = {
+        companyNo: '171020091821002',
+        scontent: res.routeid, // 如果未传入 scontent，则默认为 '99999'
+        type:'1'
+    }
+    console.log("🚩 ~ getBusLiveStatus ~ data.res 👇\n", res)
+    return wechatHttp.post(
+        Api.getBusLiveStatus,
+        `params=${JSON.stringify(data)}`
+    )
+}

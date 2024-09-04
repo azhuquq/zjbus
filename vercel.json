@@ -1,24 +1,23 @@
 {
     "rewrites": [
-      {
-        "source": "/wechatapi/:path*",
-        "destination": "http://wechat.zhjgongjiao.com/:path*"
-      },
-      {
-        "source": "/websiteapi/:path*",
-        "destination": "http://zhjgongjiao.com/:path*"
-      }
+        {
+            "source": "/wechatapi/:path*",
+            "destination": "http://wechat.zhjgongjiao.com/:path*"
+        },
+        {
+            "source": "/websiteapi/:path*",
+            "destination": "http://zhjgongjiao.com/:path*"
+        }
     ],
     "headers": [
-      {
-        "source": "/websiteapi/:path*",
-        "headers": [
-          {
-            "key": "Host",
-            "value": "zhjgongjiao.com"
-          }
-        ]
-      }
+        {
+            "source": "/websiteapi/:path*",
+            "headers": [
+                {
+                    "key": "Host",
+                    "value": "zhjgongjiao.com"
+                }
+            ]
+        }
     ]
-  }
-  
+}

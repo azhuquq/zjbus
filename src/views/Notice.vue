@@ -30,7 +30,7 @@
         <v-dialog v-model="aboutDialog">
             <v-card title="关于“湛江实时公交查询”项目" subtitle="阿朱">
                 <v-card-text class="flex flex-col gap-4">
-                    <div>本项目由阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify等框架开发</div>
+                    <div>本项目由阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify、Vercel等框架开发</div>
                     <div>阿朱官网: <a href="http://azhuquq.com">azhuquq.com</a></div>
                     <div>微信: azhuquq (是本人，欢迎交流！)</div>
                     <div>商务合作: i@azhuquq.com</div>

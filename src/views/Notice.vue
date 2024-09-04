@@ -33,7 +33,7 @@
                     <div>本项目由阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify、Vercel等框架开发</div>
                     <div>阿朱官网: <a href="http://azhuquq.com">azhuquq.com</a></div>
                     <div>微信: azhuquq (是本人，欢迎交流！)</div>
-                    <div>商务合作: i@azhuquq.com</div>
+                    <div>邮箱: i@azhuquq.com</div>
                     <div>所有数据均来源于“湛江公交”微信公众号、“湛江市公共交通有限公司”网站等公开数据，阿朱不对数据真实性及完整性负责。</div>
                 </v-card-text>
                 <v-card-actions>

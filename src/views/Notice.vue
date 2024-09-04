@@ -81,10 +81,11 @@ export default {
                 console.log("🚩 ~ getDetail ~ res 👇\n", res)
                 this.detailData.title = res.data.name
                 this.detailData.date = res.data.publish_date
-                this.detailData.content = res.data.content
+                // 替换图片地址前缀
+                this.detailData.content = res.data.content.replace(/http:\/\/www\.zhjgongjiao\.com\/uploads\//g, '/webimg/')
             }).catch(err => {
                 this.networkErr = true
-            }).finally(res => {
+            }).finally(() => {
                 this.loadingStatus.detail = false
             })
         },

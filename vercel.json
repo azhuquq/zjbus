@@ -9,7 +9,7 @@
             "destination": "http://zhjgongjiao.com/:path*"
         },
         {
-            "source": "/uploads/:path*",
+            "source": "/webimg/:path*",
             "destination": "http://www.zhjgongjiao.com/uploads/:path*"
         }
     ],
@@ -24,7 +24,7 @@
             ]
         },
         {
-            "source": "http://www.zhjgongjiao.com/uploads/:path*",
+            "source": "/webimg/:path*",
             "headers": [
                 {
                     "key": "Host",

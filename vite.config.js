@@ -25,6 +25,14 @@ export default defineConfig({
           Host: 'zhjgongjiao.com'
         }
       },
+      '/webimg': {
+        target: 'http://www.zhjgongjiao.com/uploads/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/webimg/, ''),
+        headers: {
+          Host: 'zhjgongjiao.com'
+        }
+      },
     },
   },
   resolve: {

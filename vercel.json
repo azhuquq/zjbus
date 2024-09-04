@@ -7,6 +7,10 @@
         {
             "source": "/websiteapi/:path*",
             "destination": "http://zhjgongjiao.com/:path*"
+        },
+        {
+            "source": "/uploads/:path*",   // 针对图片请求的代理规则
+            "destination": "http://www.zhjgongjiao.com/uploads/:path*"
         }
     ],
     "headers": [
@@ -16,6 +20,24 @@
                 {
                     "key": "Host",
                     "value": "zhjgongjiao.com"
+                }
+            ]
+        },
+        {
+            "source": "/uploads/:path*",   // 为图片请求设置 Host 头部
+            "headers": [
+                {
+                    "key": "Host",
+                    "value": "www.zhjgongjiao.com"
+                }
+            ]
+        },
+        {
+            "source": "http://www.zhjgongjiao.com/uploads/:path*",   // 为图片请求设置 Host 头部
+            "headers": [
+                {
+                    "key": "Host",
+                    "value": "www.zhjgongjiao.com"
                 }
             ]
         }

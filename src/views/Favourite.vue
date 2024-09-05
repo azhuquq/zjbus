@@ -49,7 +49,7 @@
                                 <div v-if="item.status && item.status.length > 0">
                                     <template v-if="hasActiveBuses(item.status, per.dir)">
                                         <!-- 有活动车辆时 -->
-                                        <div class="flex flex-row">
+                                        <div class="flex flex-row overflow-x-auto whitespace-nowrap">
                                             <div v-for="(bus, index) in item.status" :key="index">
                                                 <div v-if="bus.roadstatus && bus.roadstatus === per.dir">
                                                     <v-chip class="p-2 me-2" color="green" label>

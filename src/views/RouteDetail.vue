@@ -120,7 +120,7 @@ export default {
 
         // 判断是否为微信环境（检测 MicroMessenger 或 WeChat）
         this.isWeChat = /MicroMessenger|WeChat/i.test(navigator.userAgent)
-        this.isWeChat = true
+        // this.isWeChat = true
 
         this.fetchRouteDetail()
         this.intervalId = setInterval(() => {

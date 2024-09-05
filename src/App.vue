@@ -5,7 +5,7 @@
         <v-container fluid>
           <!-- 使用 keep-alive 缓存特定页面 -->
           <router-view v-slot="{ Component, route }">
-            <keep-alive :include="['Home', 'Search', 'Notice']">
+            <keep-alive :include="cachedPages">
               <component :is="Component" :key="route.fullPath" />
             </keep-alive>
           </router-view>
@@ -21,7 +21,7 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router'
 import BottomNavigation from './components/BottomNavigation.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const route = useRoute()
 
@@ -29,4 +29,7 @@ const route = useRoute()
 const showBottomNavigation = computed(() => {
   return [null, '/', '/search', '/notice'].includes(route.path)
 })
+
+// 动态控制要缓存的页面
+const cachedPages = ref(['Home', 'Search', 'Notice'])  // 指定需要缓存的路由 name
 </script>

@@ -74,15 +74,19 @@
                     </v-card-text>
                 </v-card>
             </div>
-            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-14 right-20" @click="refresh()"></v-fab>
+            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16" @click="refresh()"></v-fab>
+            <v-fab icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-16"
+                @click="openQRCode()"></v-fab>
+            <MPQRCodePanel ref="qrCodePanel" />
         </div>
     </template>
 
 <script>
 import { getRouteDetail, getBusLiveStatus } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
+import MPQRCodePanel from '@/components/MPQRCodePanel.vue'
 export default {
-    components: { NetworkErr },
+    components: { NetworkErr, MPQRCodePanel },
     data() {
         return {
             networkErr: {
@@ -205,6 +209,10 @@ export default {
             } else {
                 this.fetchLive()
             }
+        },
+        openQRCode() {
+            // 调用子组件的 openSheet 方法来显示 bottom-sheet
+            this.$refs.qrCodePanel.openSheet()
         }
 
     }

@@ -1,25 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '@/views/Home.vue'
+import Search from '@/views/Search.vue'
+import Notice from '@/views/Notice.vue'
+import RouteDetail from '@/views/RouteDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      component: () => import('@/views/Home.vue'),
-    },
-    {
-      path: '/search',
-      component: () => import('@/views/Search.vue'),
-    },
-    {
-      path: '/notice',
-      component: () => import('@/views/Notice.vue'),
-    },
-    {
-      path: '/routedetail',
-      component: () => import('@/views/RouteDetail.vue'),
-      meta: { title: '路线详情' }
-    }
+    { path: '/', name: 'Home', component: Home },
+    { path: '/search', name: 'Search', component: Search },
+    { path: '/notice', name: 'Notice', component: Notice },
+    { path: '/routedetail', name: 'RouteDetail', component: RouteDetail, meta: { title: '路线详情' } }
   ]
 })
 

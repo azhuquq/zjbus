@@ -13,7 +13,7 @@
             "destination": "http://www.zhjgongjiao.com/uploads/:path*"
         },
         {
-            "source": "/(.*)", // 这个规则用于处理前端路由
+            "source": "/(.*)",
             "destination": "/index.html"
         }
     ],

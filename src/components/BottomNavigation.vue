@@ -1,16 +1,20 @@
 <template>
     <v-layout class="overflow-visible" style="height: 56px;">
         <v-bottom-navigation color="primary" mode="shift" v-model="value" mandatory>
-            <v-btn @click="navigateTo('/')" value="/">
-                <v-icon>ri:route-line</v-icon>
+            <v-btn @click="navigateTo('/')" value="/" rounded="pill">
+                <v-icon>{{ getIcon('/', 'route') }}</v-icon>
                 <span>路线</span>
             </v-btn>
-            <v-btn @click="navigateTo('/search')" value="/search">
-                <v-icon>ri:search-line</v-icon>
+            <v-btn @click="navigateTo('/favourite')" value="/favourite" rounded="pill">
+                <v-icon>{{ getIcon('/favourite', 'star') }}</v-icon>
+                <span>收藏</span>
+            </v-btn>
+            <v-btn @click="navigateTo('/search')" value="/search" rounded="pill">
+                <v-icon>{{ getIcon('/search', 'search') }}</v-icon>
                 <span>搜索</span>
             </v-btn>
-            <v-btn @click="navigateTo('/notice')" value="/notice">
-                <v-icon>ri:sticky-note-line</v-icon>
+            <v-btn @click="navigateTo('/notice')" value="/notice" rounded="pill">
+                <v-icon>{{ getIcon('/notice', 'sticky-note') }}</v-icon>
                 <span>通告</span>
             </v-btn>
         </v-bottom-navigation>
@@ -40,6 +44,10 @@ export default {
     methods: {
         navigateTo(path) {
             this.$router.push(path)
+        },
+        getIcon(path, icon) {
+            // 判断当前路径是否为选中的路径，返回相应的图标
+            return this.value === path ? `ri:${icon}-fill` : `ri:${icon}-line`
         }
     }
 }

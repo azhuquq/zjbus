@@ -12,7 +12,7 @@
                         <div class="flex justify-center">
                             <QRCodeGenerator text="https://mp.weixin.qq.com/a/~2PfmmpIJRTo--eGNPeuSZQ~~" />
                         </div>
-                        <v-alert icon="ri:alarm-warning-line" density="comfortable" text="注意：这不是乘车二维码" type="warning"
+                        <v-alert icon="ri:alert-line" density="comfortable" text="注意：这不是乘车二维码" type="warning"
                             variant="tonal" class="w-full" max-width="480px"></v-alert>
                     </div>
                 </v-card-text>

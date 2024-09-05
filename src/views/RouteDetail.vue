@@ -10,10 +10,13 @@
                         <v-progress-circular indeterminate />
                     </div>
                 </v-app-bar-title>
-                <template v-slot:append>
+                <template v-slot:append><!-- 右边插槽 -->
                     <div v-if="isLoading && title != ''" class="mr-2">
                         <v-progress-circular indeterminate />
                     </div>
+                    <v-btn :icon="isFavourite ? 'ri:star-fill' : 'ri:star-line'" @click="toggleFavourite"
+                        v-if="title != ''" :color="isFavourite ? 'amber' : ''">
+                    </v-btn>
                     <v-btn icon="ri:arrow-left-right-line" @click="changeDirection()"></v-btn>
                 </template>
             </v-app-bar>
@@ -91,6 +94,7 @@ export default {
     components: { NetworkErr, MPQRCodePanel },
     data() {
         return {
+            isFavourite: false,
             networkErr: {
                 info: false,
                 live: false
@@ -102,22 +106,27 @@ export default {
             title: '', // 默认标题
             liveData: [],
             nextStartTime: '',
-            intervalId: null // 用于存储定时器ID
+            intervalId: null, // 用于存储定时器ID
+            isWeChat: false,
+            finalDir: '0'
         }
     },
     mounted() {
         this.routeid = this.$route.query.id
         if (this.$route.query.dir) {
             this.dir = this.$route.query.dir
+            this.finalDir = this.dir
         }
 
         // 判断是否为微信环境（检测 MicroMessenger 或 WeChat）
         this.isWeChat = /MicroMessenger|WeChat/i.test(navigator.userAgent)
+        this.isWeChat = true
 
         this.fetchRouteDetail()
         this.intervalId = setInterval(() => {
             this.fetchLive()
         }, 7000)
+        this.checkIfFavourite()
     },
     beforeUnmount() {
         // 在组件销毁时清除定时器
@@ -139,6 +148,7 @@ export default {
                 // 使用 filter 筛选出 roadstatus 为 this.dir 的对象
                 this.routeinfo = res.lineinfos ? res.lineinfos.filter(route => route.roadstatus == this.dir)[0] : []
                 this.title = `${this.routeinfo.roadname}(开往${this.routeinfo.lastsite})`
+                this.finalDir = this.routeinfo.roadstatus
                 this.fetchLive()
             }).catch(error => {
                 console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
@@ -155,6 +165,7 @@ export default {
             }
             this.nextStartTime = ''
             this.fetchRouteDetail()
+            this.checkIfFavourite()
         },
         back() {
             this.$router.back()
@@ -219,6 +230,33 @@ export default {
         openQRCode() {
             // 调用子组件的 openSheet 方法来显示 bottom-sheet
             this.$refs.qrCodePanel.openSheet()
+        },
+        checkIfFavourite() {
+            const favourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+            this.isFavourite = favourites.some(route => route.routeid === this.routeid && route.dir === this.dir)
+        },
+        // 收藏/取消收藏线路
+        toggleFavourite() {
+            const favourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+            const existingIndex = favourites.findIndex(route => route.routeid === this.routeid && route.dir === this.finalDir)
+            if (existingIndex > -1) {
+                // 如果已经收藏，则取消收藏
+                favourites.splice(existingIndex, 1)
+                this.isFavourite = false
+            } else {
+                // 如果没有收藏，则添加到收藏列表
+                const routeData = {
+                    routeid: this.routeid,
+                    title: this.title,
+                    dir: this.finalDir,
+                    routename: this.routeinfo.roadname,
+                    laststation: this.routeinfo.lastsite
+                }
+                favourites.push(routeData)
+                this.isFavourite = true
+            }
+
+            localStorage.setItem('favouriteRoutes', JSON.stringify(favourites))
         }
 
     }

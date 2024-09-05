@@ -9,7 +9,7 @@ const Api = {
 export const searchRoute = (res = {}) => {
     const data = {
         companyNo: '171020091821002',
-        scontent: res.scontent || '99999', // 如果未传入 scontent，则默认为 '99999'
+        scontent: res.scontent || '99999',
     }
     return wechatHttp.post(
         Api.getRoadInfo,
@@ -19,7 +19,7 @@ export const searchRoute = (res = {}) => {
 export const getRouteDetail = (res = {}) => {
     const data = {
         companyNo: '171020091821002',
-        scontent: res.routeid, // 如果未传入 scontent，则默认为 '99999'
+        scontent: res.routeid,
     }
     return wechatHttp.post(
         Api.getRouteDetail,
@@ -29,10 +29,10 @@ export const getRouteDetail = (res = {}) => {
 export const getBusLiveStatus = (res = {}) => {
     const data = {
         companyNo: '171020091821002',
-        scontent: res.routeid, // 如果未传入 scontent，则默认为 '99999'
+        scontent: res.routeid,
         type:'1'
     }
-    console.log("🚩 ~ getBusLiveStatus ~ data.res 👇\n", res)
+    // console.log("🚩 ~ getBusLiveStatus ~ data.res 👇\n", res)
     return wechatHttp.post(
         Api.getBusLiveStatus,
         `params=${JSON.stringify(data)}`

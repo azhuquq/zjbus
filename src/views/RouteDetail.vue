@@ -74,9 +74,11 @@
                     </v-card-text>
                 </v-card>
             </div>
-            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16" @click="refresh()"></v-fab>
-            <v-fab icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-16"
-                @click="openQRCode()"></v-fab>
+            <v-fab v-if="isWeChat" icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16"
+                @click="refresh()" />
+            <v-fab v-if="isWeChat" icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-16"
+                @click="openQRCode()" />
+            <v-fab v-else icon="ri:refresh-line" color="primary" class="fixed bottom-10 right-16" @click="refresh()" />
             <MPQRCodePanel ref="qrCodePanel" />
         </div>
     </template>
@@ -108,6 +110,10 @@ export default {
         if (this.$route.query.dir) {
             this.dir = this.$route.query.dir
         }
+
+        // 判断是否为微信环境（检测 MicroMessenger 或 WeChat）
+        this.isWeChat = /MicroMessenger|WeChat/i.test(navigator.userAgent)
+
         this.fetchRouteDetail()
         this.intervalId = setInterval(() => {
             this.fetchLive()

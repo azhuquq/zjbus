@@ -53,6 +53,7 @@ import NetworkErr from '@/components/NetworkErr.vue'
 import debounce from 'lodash/debounce'
 
 export default {
+    name:'Search',
     components: { NetworkErr },
     data() {
         return {

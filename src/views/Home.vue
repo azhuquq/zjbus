@@ -40,6 +40,7 @@
 import { searchRoute } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
 export default {
+    name:'Home',
     components: { NetworkErr },
     data() {
         return {

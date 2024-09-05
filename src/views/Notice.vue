@@ -48,6 +48,7 @@
 import { getNoticeIndex, getNoticeDetail } from '@/api/webApi'
 import NetworkErr from '@/components/NetworkErr.vue'
 export default {
+    name:'Notice',
     components: { NetworkErr },
     data() {
         return {

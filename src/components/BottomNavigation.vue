@@ -1,6 +1,6 @@
 <template>
     <v-layout class="overflow-visible" style="height: 56px;">
-        <v-bottom-navigation color="primary" mode="shift" v-model="value">
+        <v-bottom-navigation color="primary" mode="shift" v-model="value" mandatory>
             <v-btn @click="navigateTo('/')" value="/">
                 <v-icon>ri:route-line</v-icon>
                 <span>路线</span>

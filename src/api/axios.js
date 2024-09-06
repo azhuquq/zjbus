@@ -5,6 +5,7 @@ const wechatHttp = axios.create({
     baseURL: import.meta.env.VITE_BASE_API_WECHAT || '',
     timeout: 10000, // 请求超时时间
     headers: {
+        'isazhuapp': 'true',
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
     },
 })

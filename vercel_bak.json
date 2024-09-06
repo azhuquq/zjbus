@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/wechatapi/:path*",
+            "destination": "http://wechat.zhjgongjiao.com/:path*"
+        },
+        {
+            "source": "/websiteapi/:path*",
+            "destination": "http://zhjgongjiao.com/:path*"
+        },
+        {
             "source": "/webimg/:path*",
             "destination": "http://www.zhjgongjiao.com/uploads/:path*"
         },
@@ -10,6 +18,15 @@
         }
     ],
     "headers": [
+        {
+            "source": "/websiteapi/:path*",
+            "headers": [
+                {
+                    "key": "Host",
+                    "value": "zhjgongjiao.com"
+                }
+            ]
+        },
         {
             "source": "/webimg/:path*",
             "headers": [

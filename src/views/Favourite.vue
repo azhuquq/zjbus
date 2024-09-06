@@ -63,7 +63,7 @@
                                     </template>
                                     <template v-else>
                                         <!-- 当前方向没有活动车辆 -->
-                                        <v-chip class="p-2" label color="blue-grey">
+                                        <v-chip class="p-2" label color="primary">
                                             <v-icon icon="ri:signpost-line" start />
                                             无活动车辆
                                         </v-chip>
@@ -71,7 +71,7 @@
                                 </div>
                                 <div v-else>
                                     <!-- 当前线路没有状态 -->
-                                    <v-chip class="p-2" label color="blue-grey">
+                                    <v-chip class="p-2" label color="primary">
                                         <v-icon icon="ri:signpost-line" start />
                                         无活动车辆
                                     </v-chip>
@@ -79,7 +79,7 @@
                             </template>
                             <div v-else>
                                 <!-- 未加载完成时显示未知 -->
-                                <v-chip class="p-2" color="brown" label>
+                                <v-chip class="p-2" label>
                                     <v-icon icon="ri:questionnaire-line" start />
                                     未知
                                 </v-chip>

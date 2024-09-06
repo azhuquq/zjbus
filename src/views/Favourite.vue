@@ -63,16 +63,16 @@
                                     </template>
                                     <template v-else>
                                         <!-- 当前方向没有活动车辆 -->
-                                        <v-chip class="p-2" color="red" label>
-                                            <v-icon icon="ri:alert-line" start />
+                                        <v-chip class="p-2" label color="secondary">
+                                            <v-icon icon="ri:signpost-line" start />
                                             无活动车辆
                                         </v-chip>
                                     </template>
                                 </div>
                                 <div v-else>
                                     <!-- 当前线路没有状态 -->
-                                    <v-chip class="p-2" color="red" label>
-                                        <v-icon icon="ri:alert-line" start />
+                                    <v-chip class="p-2" label color="secondary">
+                                        <v-icon icon="ri:signpost-line" start />
                                         无活动车辆
                                     </v-chip>
                                 </div>
@@ -80,7 +80,7 @@
                             <div v-else>
                                 <!-- 未加载完成时显示未知 -->
                                 <v-chip class="p-2" color="orange" label>
-                                    <v-icon icon="ri:alert-line" start />
+                                    <v-icon icon="ri:questionnaire-line" start />
                                     未知
                                 </v-chip>
                             </div>
@@ -98,7 +98,7 @@ import { getBusLiveStatus } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
 
 export default {
-    name:'Favourite',
+    name: 'Favourite',
     components: { NetworkErr },
     data() {
         return {

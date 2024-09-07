@@ -96,15 +96,11 @@
                     </v-card-text>
                 </v-card>
             </div>
-            <v-fab v-if="isWeChat" icon="ri:refresh-line" color="primary" class="fixed bottom-38 right-16"
-                @click="refresh()" />
-            <v-fab v-if="isWeChat" icon="ri:map-2-line" color="primary" class="fixed bottom-24 right-16"
-                @click="openMap()" />
-            <v-fab v-if="isWeChat" icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-16"
+            <v-fab v-if="isWeChat" icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-30"
                 @click="openQRCode()" />
-            <v-fab v-if="!isWeChat" icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16"
+            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16"
                 @click="refresh()" />
-            <v-fab v-if="!isWeChat" icon="ri:map-2-line" color="primary" class="fixed bottom-10 right-16"
+            <v-fab icon="ri:map-2-line" color="primary" class="fixed bottom-10 right-16"
                 @click="openMap()" />
             <MPQRCodePanel ref="qrCodePanel" />
             <v-bottom-sheet v-model="mapSheet" @update:modelValue="clearSelectedStation">

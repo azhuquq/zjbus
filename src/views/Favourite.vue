@@ -3,7 +3,7 @@
         <v-app-bar elevation="1">
             <v-app-bar-title>收藏路线</v-app-bar-title>
             <template v-slot:append>
-                <div v-if="isRefreshing" class="me-2">
+                <div v-if="isRefreshingStat" class="me-2">
                     <!-- 显示进度圆圈 -->
                     <v-progress-circular indeterminate />
                 </div>
@@ -25,7 +25,7 @@
         <!-- 上面的不用改 -->
         <div v-else class="flex flex-col gap-4">
             <!-- 如果任一线路请求失败，显示网络错误组件 -->
-            <NetworkErr v-if="hasError" class="my-2" />
+            <NetworkErr v-if="hasErrorStat" class="my-2" />
             <v-card v-for="(item, index) in mergedFavourites" :key="index">
                 <template v-slot:title>
                     <div class="text-xl font-bold">
@@ -106,16 +106,61 @@ export default {
             mergedFavourites: [], // 存储合并后的收藏路线
             firstLoad: true, // 新增标志：判断是否首次加载
             isRefreshing: false, // 标志是否正在刷新
-            hasError: false // 标志是否有网络错误
+            hasError: false, // 标志是否有网络错误
+            favouritesSnapshot: null,
+            timers: [] // 保存定时器的数组
+        }
+    },
+    computed: {
+        isRefreshingStat() {
+            // 检查 mergedFavourites 中是否有任何项目正在刷新
+            return this.mergedFavourites.some(fav => fav.isRefreshing)
+        },
+        hasErrorStat() {
+            // 检查 mergedFavourites 中是否有任何项目出现错误
+            return this.mergedFavourites.some(fav => fav.isError)
         }
     },
     mounted() {
         // 从 localStorage 中读取收藏的线路，并进行合并
         this.favourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
         this.mergeFavourites() // 初始化合并收藏路线
+        this.favouritesSnapshot = JSON.stringify(this.favourites) // 保存收藏列表快照
         this.refresh() // 初次加载时自动刷新
     },
+    activated() {
+        const currentFavourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+        if (JSON.stringify(currentFavourites) !== JSON.stringify(this.favourites)) {
+            this.favourites = currentFavourites
+            this.mergeFavourites() // 如果发生变化，重新合并收藏路线
+            this.refresh() // 触发刷新
+        }
+        this.setupTimers()
+    },
+    deactivated() {
+        // 页面不激活时，清除所有定时器，停止刷新
+        this.clearTimers()
+    },
+    beforeUnmount() {
+        // 清除所有定时器，避免内存泄漏
+        this.clearTimers()
+    },
     methods: {
+        setupTimers() {
+            // 为每个合并后的路线设置定时刷新
+            this.mergedFavourites.forEach((fav, index) => {
+                // 每个元素都有自己的定时器，每隔 8 秒调用一次刷新
+                const timer = setInterval(() => {
+                    this.refreshSingleRoute(fav.routeid)
+                }, 8000)
+                this.timers.push(timer) // 将定时器保存到 timers 数组中
+            })
+        },
+        clearTimers() {
+            // 清除所有定时器
+            this.timers.forEach(timer => clearInterval(timer))
+            this.timers = [] // 清空定时器数组
+        },
         mergeFavourites() {
             const grouped = {}
             this.favourites.forEach(fav => {
@@ -124,8 +169,11 @@ export default {
                         routename: fav.routename,
                         routeid: fav.routeid,
                         directions: [],
-                        status: fav.status || [], // 确保每个 route 有 status 属性
-                        isLoaded: false, // 新增标志：是否加载完成
+                        status: fav.status || [],
+                        isLoaded: false,
+                        isRefreshing: false, // 新增：是否正在刷新
+                        isError: false, // 新增：是否出现错误
+                        refreshTimer: null
                     }
                 }
                 grouped[fav.routeid].directions.push({
@@ -145,39 +193,54 @@ export default {
             // 根据收藏的线路跳转到线路详情页面
             this.$router.push({ path: '/routedetail', query: { id: route.routeid, dir: route.dir } })
         },
-        async refresh() {
-            this.isRefreshing = true // 开始刷新时设置为 true
-            let errorOccurred = false // 用来跟踪是否发生错误
-
-            // 遍历每个收藏的路线（mergedFavourites）
-            for (let i = 0; i < this.mergedFavourites.length; i++) {
-                const fav = this.mergedFavourites[i]
+        async refreshSingleRoute(routeid) {
+            const fav = this.mergedFavourites.find(f => f.routeid === routeid)
+            if (fav) {
+                fav.isRefreshing = true // 开始刷新
                 try {
-                    // 首次刷新时将状态标记为未加载，后续刷新不再更改 isLoaded
-                    if (this.firstLoad) {
-                        fav.isLoaded = false
-                    }
-                    // 获取实时状态
                     const res = await getBusLiveStatus({ routeid: fav.routeid })
                     const updatedStatus = res.businfos.filter(bus => bus.lastOutSiteMileage != "0")
                     updatedStatus.sort((a, b) => Number(a.stationno) - Number(b.stationno))
-                    // 更新状态并标记为加载成功
                     fav.status = updatedStatus
+                    fav.isError = false // 成功后清除错误标记
+                } catch (error) {
+                    console.error(`获取路线 ${routeid} 状态失败`, error)
+                    fav.isError = true // 出现错误
+                } finally {
                     fav.isLoaded = true
+                    fav.isRefreshing = false // 刷新完成
+                }
+            }
+        },
+        async refresh() {
+            this.isRefreshing = true
+            let errorOccurred = false
+
+            for (let i = 0; i < this.mergedFavourites.length; i++) {
+                const fav = this.mergedFavourites[i]
+                fav.isRefreshing = true // 开始刷新
+                try {
+                    if (this.firstLoad) {
+                        fav.isLoaded = false
+                    }
+                    const res = await getBusLiveStatus({ routeid: fav.routeid })
+                    const updatedStatus = res.businfos.filter(bus => bus.lastOutSiteMileage != "0")
+                    updatedStatus.sort((a, b) => Number(a.stationno) - Number(b.stationno))
+                    fav.status = updatedStatus
+                    fav.isError = false
                 } catch (error) {
                     console.error(`获取路线 ${fav.routename} 状态失败`, error)
-                    // 如果发生错误，设置 errorOccurred 为 true
+                    fav.isError = true
                     errorOccurred = true
+                } finally {
                     fav.isLoaded = true
+                    fav.isRefreshing = false // 刷新完成
                 }
             }
 
-            // 如果发生了任意错误，将 hasError 设为 true，否则设为 false
             this.hasError = errorOccurred
-
-            // 刷新完成后，标志为非首次加载
             this.firstLoad = false
-            this.isRefreshing = false // 刷新完成后设置为 false
+            this.isRefreshing = false
         },
 
         fixNo(e) {

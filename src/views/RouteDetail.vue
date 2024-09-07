@@ -21,6 +21,7 @@
                 </template>
             </v-app-bar>
             <NetworkErr v-if="networkErr.info || networkErr.live" class="my-2" />
+
             <div v-if="routeinfo && routeinfo.busstation" class="flex flex-col gap-4">
                 <v-card class="bg-indigo">
                     <v-card-text>
@@ -44,16 +45,34 @@
                         </div>
                     </v-card-text>
                 </v-card>
-                <v-alert icon="ri:flag-2-line" :text="`下一趟车将在${nextStartTime}开出`" type="success"
+                <div v-if="hasFetched && hasFetched === true">
+                    <div v-if="liveData && liveData.length > 0">
+                        <v-alert v-if="filteredBuses.length > 0" icon="ri:bus-line" type="success">
+                            {{ filteredBuses.length }} 活动车辆
+                        </v-alert>
+                        <v-alert v-else type="blue-grey" icon="ri:signpost-line">
+                            无活动车辆
+                        </v-alert>
+                    </div>
+                    <div v-else>
+                        <v-alert type="blue-grey" icon="ri:signpost-line">
+                            无活动车辆
+                        </v-alert>
+                    </div>
+                </div>
+                <v-alert icon="ri:flag-2-line" :text="`下一趟车将在${nextStartTime}开出`" type="teal"
                     v-if="nextStartTime && nextStartTime != ''"></v-alert>
                 <!-- {{ routeinfo }} -->
-                <v-card v-for="item in routeinfo.busstation" :key="item.stationno">
+                <v-card v-for="item in routeinfo.busstation" :key="item.stationno" @click="viewStationDetails(item)">
                     <v-card-text>
                         <div class="flex flex-col">
                             <div class="flex justify-between text-base">
-                                <div class="flex flex-row gap-1">
-                                    <div class="text-xs content-center font-bold">{{ item.stationno }}</div>
-                                    <div>{{ item.stationname }}</div>
+                                <div class="flex align-center justify-between w-full">
+                                    <div class="flex flex-row gap-1 align-center">
+                                        <div class="text-xs content-center font-bold">{{ item.stationno }}</div>
+                                        <div>{{ item.stationname }}</div>
+                                    </div>
+                                    <v-icon>ri:navigation-line</v-icon>
                                 </div>
                             </div>
                             <v-divider class="my-2" />
@@ -77,12 +96,22 @@
                     </v-card-text>
                 </v-card>
             </div>
-            <v-fab v-if="isWeChat" icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16"
+            <v-fab v-if="isWeChat" icon="ri:refresh-line" color="primary" class="fixed bottom-38 right-16"
                 @click="refresh()" />
+            <v-fab v-if="isWeChat" icon="ri:map-2-line" color="primary" class="fixed bottom-24 right-16"
+                @click="openMap()" />
             <v-fab v-if="isWeChat" icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-16"
                 @click="openQRCode()" />
-            <v-fab v-else icon="ri:refresh-line" color="primary" class="fixed bottom-10 right-16" @click="refresh()" />
+            <v-fab v-if="!isWeChat" icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16"
+                @click="refresh()" />
+            <v-fab v-if="!isWeChat" icon="ri:map-2-line" color="primary" class="fixed bottom-10 right-16"
+                @click="openMap()" />
             <MPQRCodePanel ref="qrCodePanel" />
+            <v-bottom-sheet v-model="mapSheet" @update:modelValue="clearSelectedStation">
+                <MapContainer :busStations="routeinfo.busstation" :liveData="liveData" :finalDir="finalDir"
+                    :selectedStation="selectedStation" style="height: 80vh;" class="mb-2" />
+            </v-bottom-sheet>
+
         </div>
     </template>
 
@@ -90,10 +119,12 @@
 import { getRouteDetail, getBusLiveStatus } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
 import MPQRCodePanel from '@/components/MPQRCodePanel.vue'
+import MapContainer from '@/components/MapContainer.vue'
 export default {
-    components: { NetworkErr, MPQRCodePanel },
+    components: { NetworkErr, MPQRCodePanel, MapContainer },
     data() {
         return {
+            hasFetched: false,
             isFavourite: false,
             networkErr: {
                 info: false,
@@ -108,7 +139,9 @@ export default {
             nextStartTime: '',
             intervalId: null, // 用于存储定时器ID
             isWeChat: false,
-            finalDir: '0'
+            finalDir: '0',
+            mapSheet: false,
+            filteredBuses: []
         }
     },
     mounted() {
@@ -121,11 +154,11 @@ export default {
         // 判断是否为微信环境（检测 MicroMessenger 或 WeChat）
         this.isWeChat = /MicroMessenger|WeChat/i.test(navigator.userAgent)
         // this.isWeChat = true
-
+        
         this.fetchRouteDetail()
         this.intervalId = setInterval(() => {
             this.fetchLive()
-        }, 7000)
+        }, 8000)
         this.checkIfFavourite()
     },
     beforeUnmount() {
@@ -141,6 +174,19 @@ export default {
         }
     },
     methods: {
+        clearSelectedStation(value) {
+            if (!value) {
+                this.selectedStation = null
+            }
+        },
+        viewStationDetails(station) {
+            // console.log("🚩 ~ viewStationDetails ~ station 👇\n", station)
+            this.selectedStation = station // 保存当前选中的站点
+            this.mapSheet = true
+        },
+        openMap(e) {
+            this.mapSheet = true
+        },
         async fetchRouteDetail() {
             this.networkErr.info = false
             this.isLoading = true
@@ -163,6 +209,8 @@ export default {
             } else {
                 this.dir = '0'
             }
+            this.hasFetched = false
+            this.filteredBuses = []
             this.nextStartTime = ''
             this.fetchRouteDetail()
             this.checkIfFavourite()
@@ -181,6 +229,8 @@ export default {
                     // 过滤掉 lastOutSiteMileage 为 0 的数据
                     this.liveData = res.businfos.filter(bus => bus.lastOutSiteMileage !== "0")
                     this.setPlantime(res.nearPlanTime)
+                    this.hasFetched = true
+                    this.updateFilteredBuses() // 更新 filteredBuses
                 }).catch(error => {
                     console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
                     this.networkErr.live = true
@@ -216,6 +266,7 @@ export default {
                 ...bus,
                 speed: (Number(bus.speed) / 10).toFixed(1) // 将 speed 除以 10 并保留一位小数
             })).filter(bus =>
+                bus.roadstatus == this.finalDir &&
                 bus.stationno == String(adjustedStationNo) &&
                 bus.sitename == item.stationname
             )
@@ -257,7 +308,10 @@ export default {
             }
 
             localStorage.setItem('favouriteRoutes', JSON.stringify(favourites))
-        }
+        },
+        updateFilteredBuses() {
+            this.filteredBuses = this.liveData.filter(bus => bus.roadstatus == this.finalDir)
+        },
 
     }
 }

@@ -85,7 +85,7 @@
                                     <div class="flex flex-col">
                                         <div>车牌号: {{ bus.busplate }}</div>
                                         <div>车速: {{ bus.speed }} km/h</div>
-                                        <div>更新时间: {{ bus.gpssendtime }}</div>
+                                        <div>更新时间: {{ formatGpsTime(bus.gpssendtime) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -98,10 +98,8 @@
             </div>
             <v-fab v-if="isWeChat" icon="ri:qr-code-line" color="primary" class="fixed bottom-10 right-30"
                 @click="openQRCode()" />
-            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16"
-                @click="refresh()" />
-            <v-fab icon="ri:map-2-line" color="primary" class="fixed bottom-10 right-16"
-                @click="openMap()" />
+            <v-fab icon="ri:refresh-line" color="primary" class="fixed bottom-24 right-16" @click="refresh()" />
+            <v-fab icon="ri:map-2-line" color="primary" class="fixed bottom-10 right-16" @click="openMap()" />
             <MPQRCodePanel ref="qrCodePanel" />
             <v-bottom-sheet v-model="mapSheet" @update:modelValue="clearSelectedStation">
                 <MapContainer :busStations="routeinfo.busstation" :liveData="liveData" :finalDir="finalDir"
@@ -116,6 +114,8 @@ import { getRouteDetail, getBusLiveStatus } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
 import MPQRCodePanel from '@/components/MPQRCodePanel.vue'
 import MapContainer from '@/components/MapContainer.vue'
+import moment from 'moment'
+import "moment/dist/locale/zh-cn";
 export default {
     components: { NetworkErr, MPQRCodePanel, MapContainer },
     data() {
@@ -141,6 +141,7 @@ export default {
         }
     },
     mounted() {
+        moment.locale(''); // 设置为中文
         this.routeid = this.$route.query.id
         if (this.$route.query.dir) {
             this.dir = this.$route.query.dir
@@ -170,6 +171,14 @@ export default {
         }
     },
     methods: {
+        formatGpsTime(gpssendtime) {
+            if (gpssendtime) {
+                // 使用 moment 解析时间
+                const time = moment(gpssendtime, 'YYYY-MM-DD HH:mm:ss')
+                // 获取相对于现在的时间差
+                return time.fromNow() // 例如：'a few seconds ago' 或 '2 minutes ago'
+            }
+        },
         clearSelectedStation(value) {
             if (!value) {
                 this.selectedStation = null

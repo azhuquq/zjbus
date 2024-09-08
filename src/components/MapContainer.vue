@@ -5,7 +5,8 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader"
 import gcoord from 'gcoord'
-
+import moment from 'moment'
+import "moment/dist/locale/zh-cn"
 export default {
     props: {
         busStations: {
@@ -177,7 +178,7 @@ export default {
                     busMarker.on('click', () => {
                         const infoWindow = new AMap.InfoWindow({
                             // isCustom: true, //使用自定义窗体
-                            content: `<div>车牌号: ${busData.busplate}<br/>车速: ${this.fixSpeed(busData.speed)} km/h<br/>更新时间: ${busData.gpssendtime} km/h</div>`,
+                            content: `<div>车牌号: ${busData.busplate}<br/>车速: ${this.fixSpeed(busData.speed)} km/h<br/>更新时间: ${this.formatGpsTime(busData.gpssendtime)}</div>`,
                             anchor: "bottom-center"
                         })
                         infoWindow.open(this.map, busMarker.getPosition())
@@ -203,13 +204,22 @@ export default {
             })
             infoWindow.open(this.map, marker.getPosition())
         },
-        
+
         fixSpeed(e) {
             const num = Number(e)
             if (isNaN(num)) {
                 return "N/A"
             }
             return (num / 10).toFixed(1)
+        },
+        formatGpsTime(gpssendtime) {
+            moment.locale('') // 设置为中文
+            if (gpssendtime) {
+                // 使用 moment 解析时间
+                const time = moment(gpssendtime, 'YYYY-MM-DD HH:mm:ss')
+                // 获取相对于现在的时间差
+                return time.fromNow() // 例如：'a few seconds ago' 或 '2 minutes ago'
+            }
         }
     },
     watch: {

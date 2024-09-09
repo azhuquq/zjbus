@@ -45,7 +45,7 @@
                 </v-card-text>
             </v-card>
             <MapContainer ref="mapContainer" :busStations="routeinfo.busstation" :liveData="liveData"
-                :finalDir="finalDir" :selectedStation="selectedStation" style="height: 43vh;top:64px"
+                :finalDir="finalDir" style="height: 43vh;top:64px"
                 class="sticky z-10" />
 
             <div v-if="hasFetched && hasFetched === true">
@@ -175,11 +175,6 @@ export default {
                 const time = moment(gpssendtime, 'YYYY-MM-DD HH:mm:ss')
                 // 获取相对于现在的时间差
                 return time.fromNow() // 例如：'a few seconds ago' 或 '2 minutes ago'
-            }
-        },
-        clearSelectedStation(value) {
-            if (!value) {
-                this.selectedStation = null
             }
         },
         viewStationDetails(station) {

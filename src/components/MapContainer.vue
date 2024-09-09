@@ -22,10 +22,6 @@ export default {
             type: String,
             default: '0'
         },
-        selectedStation: {   // 确保 selectedStation 是从父组件传递进来的
-            type: Object,
-            default: null
-        }
     },
     data() {
         return {
@@ -59,9 +55,6 @@ export default {
                     })
                     this.addMarkers() // 添加站点标记
                     this.addBusMarkers() // 添加公交车标记
-                    if (this.selectedStation && this.selectedStation.stationno) {
-                        this.showStationDetails(this.selectedStation)
-                    }
                 })
                 .catch(e => {
                     console.log(e)
@@ -272,13 +265,6 @@ export default {
                 this.busMarkers.forEach(marker => marker.setMap(null)) // 清除之前的公交车标记
                 this.busMarkers = []
                 this.addBusMarkers() // 重新添加公交车标记
-            }
-        },
-        selectedStation(newStation) {
-            if (newStation) {
-                this.$nextTick(() => {
-                    this.showStationDetails(newStation)  // 当 selectedStation 改变时调用 showStationDetails
-                })
             }
         }
     }

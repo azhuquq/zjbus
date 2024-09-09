@@ -7,6 +7,7 @@ import AMapLoader from "@amap/amap-jsapi-loader"
 import gcoord from 'gcoord'
 import moment from 'moment'
 import "moment/dist/locale/zh-cn"
+
 export default {
     props: {
         busStations: {
@@ -55,7 +56,6 @@ export default {
                     this.map = new AMap.Map("container", {
                         viewMode: "3D",
                         zoom: 11,
-                        center: [110.24, 21.11] // 初始化中心点位置，可以动态设置
                     })
                     this.addMarkers() // 添加站点标记
                     this.addBusMarkers() // 添加公交车标记
@@ -66,6 +66,50 @@ export default {
                 .catch(e => {
                     console.log(e)
                 })
+        },
+        handleLocation() {
+            if (!this.map) return
+
+            AMap.plugin('AMap.Geolocation', () => {
+                const geolocation = new AMap.Geolocation({
+                    enableHighAccuracy: true, // 是否使用高精度定位
+                    timeout: 10000,           // 设置定位超时时间
+                    zoomToAccuracy: true,     // 定位成功后自动调整地图视野到定位点
+                    position: 'RB'            // 定位按钮的位置
+                })
+
+                geolocation.getCurrentPosition((status, result) => {
+                    if (status === 'complete') {
+                        this.onLocationSuccess(result) // 定位成功回调
+                    } else {
+                        this.onLocationError(result)   // 定位失败回调
+                    }
+                })
+            })
+        },
+
+        // 定位成功后的处理逻辑
+        onLocationSuccess(result) {
+            const position = result.position // 获取定位的经纬度
+            const lat = position.lat
+            const lng = position.lng
+
+            // 将地图中心设置为定位点
+            this.map.setCenter([lng, lat])
+            this.map.setZoom(15) // 根据需要调整缩放级别
+
+            // 在当前位置展示信息窗体
+            const infoWindow = new AMap.InfoWindow({
+                content: `<div>当前位置</div>`,
+                anchor: 'bottom-center'
+            })
+            infoWindow.open(this.map, [lng, lat])
+        },
+
+        // 定位失败的处理逻辑
+        onLocationError(error) {
+            console.error('定位失败', error)
+            // 你可以在这里显示定位失败的提示信息
         },
         // 解析度分格式数据为十进制度
         parseLatLng(lngStr, latStr) {
@@ -90,7 +134,6 @@ export default {
                 lat: latFinal.toFixed(6)
             }
         },
-
 
         // 添加站点标记到地图
         addMarkers() {
@@ -142,11 +185,7 @@ export default {
         addBusMarkers() {
             if (this.map && this.liveData.length > 0) {
                 // 过滤 liveData 中 roadstatus 和 finalDir 匹配的车辆
-                console.log("🚩 ~ filteredBuses ~ this.finalDir 👇\n", this.finalDir)
-                console.log("🚩 ~ filteredBuses ~ this.liveData 👇\n", this.liveData)
-
                 const filteredBuses = this.liveData.filter(bus => bus.roadstatus === this.finalDir)
-                console.log("🚩 ~ filteredBuses ~ filteredBuses 👇\n", filteredBuses)
 
                 filteredBuses.forEach(busData => {
                     const { lng, lat } = this.parseLatLng(busData.lng, busData.lat)
@@ -177,7 +216,6 @@ export default {
 
                     busMarker.on('click', () => {
                         const infoWindow = new AMap.InfoWindow({
-                            // isCustom: true, //使用自定义窗体
                             content: `<div>车牌号: ${busData.busplate}<br/>车速: ${this.fixSpeed(busData.speed)} km/h<br/>更新时间: ${this.formatGpsTime(busData.gpssendtime)}</div>`,
                             anchor: "bottom-center"
                         })
@@ -186,6 +224,7 @@ export default {
                 })
             }
         },
+
         // 展示选中的站点详细信息
         showStationDetails(station) {
             const { lng, lat } = this.parseLatLng(station.lng, station.lat)
@@ -202,7 +241,7 @@ export default {
                 content: `<div>${station.stationname}</div>`,
                 anchor: "bottom-center"
             })
-            infoWindow.open(this.map, marker.getPosition())
+            infoWindow.open(this.map, new AMap.LngLat(convertedCoords[0], convertedCoords[1]))
         },
 
         fixSpeed(e) {
@@ -215,15 +254,12 @@ export default {
         formatGpsTime(gpssendtime) {
             moment.locale('') // 设置为中文
             if (gpssendtime) {
-                // 使用 moment 解析时间
                 const time = moment(gpssendtime, 'YYYY-MM-DD HH:mm:ss')
-                // 获取相对于现在的时间差
-                return time.fromNow() // 例如：'a few seconds ago' 或 '2 minutes ago'
+                return time.fromNow()
             }
         }
     },
     watch: {
-        // 监控 busStations 数据的变化，重新添加标记点
         busStations(newStations) {
             if (this.map) {
                 this.markers.forEach(marker => marker.setMap(null)) // 清除之前的标记
@@ -231,7 +267,6 @@ export default {
                 this.addMarkers() // 重新添加标记
             }
         },
-        // 监控 liveData 数据的变化，重新添加公交车标记
         liveData(newLiveData) {
             if (this.map) {
                 this.busMarkers.forEach(marker => marker.setMap(null)) // 清除之前的公交车标记
@@ -264,10 +299,8 @@ export default {
     width: 24px;
     height: 24px;
     background-color: #2196F3;
-    /* 蓝色背景 */
     border-radius: 50%;
     color: white;
-    /* 白色文字 */
     font-size: 12px;
     font-weight: bold;
     text-align: center;
@@ -284,7 +317,6 @@ export default {
     background-color: #E91E63;
     border-radius: 50%;
     color: white;
-    /* 白色文字 */
     font-size: 12px;
     font-weight: bold;
     text-align: center;

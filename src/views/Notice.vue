@@ -6,7 +6,7 @@
           <v-btn icon="ri:information-line" @click="aboutDialog = true"></v-btn>
         </template>
       </v-app-bar>
-      <NetworkErr v-if="networkErr" class="my-2" />
+      <NetworkErr v-if="networkErr" class="mb-4" />
       <v-infinite-scroll :items="noticeItems" :onLoad="onLoad" class="flex flex-col w-full gap-4" side="end">
         <!-- 覆盖 start 和 end 的默认行为 -->
         <template v-slot:start="{ side, props }">

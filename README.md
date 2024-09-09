@@ -1,6 +1,6 @@
-# zjbus
+# 湛江 - 实时公交查询（非官方）
 
-This template should help get you started developing with Vue 3 in Vite.
+界面清晰直接，力求让用户快速获得所需资讯。
 
 ## Recommended IDE Setup
 

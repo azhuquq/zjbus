@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <v-app-bar elevation="1">
-            <v-app-bar-title>搜索线路</v-app-bar-title>
+            <v-app-bar-title>搜索路线</v-app-bar-title>
         </v-app-bar>
         <div class="">
             <v-text-field v-model="searchQuery" ref="searchField" label="线路名称" hide-details />

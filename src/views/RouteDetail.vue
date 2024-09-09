@@ -46,7 +46,7 @@
             </v-card>
             <MapContainer ref="mapContainer" :busStations="routeinfo.busstation" :liveData="liveData"
                 :finalDir="finalDir" :selectedStation="selectedStation" style="height: 43vh;top:64px"
-                class="mb-2 sticky z-10" />
+                class="sticky z-10" />
 
             <div v-if="hasFetched && hasFetched === true">
                 <div v-if="liveData && liveData.length > 0">

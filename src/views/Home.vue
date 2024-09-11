@@ -3,10 +3,10 @@
         <v-app-bar elevation="1">
             <v-app-bar-title>湛江公交</v-app-bar-title>
             <template v-slot:append>
-                <v-btn icon="ri:search-line" @click="navigateToSearch()"></v-btn>
+                <v-btn icon="ri:settings-5-line" @click="handleSettingBtnClick()"></v-btn>
             </template>
         </v-app-bar>
-        <NetworkErr v-if="networkErr" class="mb-4"/>
+        <NetworkErr v-if="networkErr" class="mb-4" />
         <div class="flex flex-col gap-2">
             <div class="w-full flex justify-center mt-16" v-if="loadingStatus === true">
                 <v-progress-circular indeterminate />
@@ -33,21 +33,26 @@
                 </v-card>
             </div>
         </div>
+        <v-dialog v-model="settingDialog">
+            <Settings />
+        </v-dialog>
     </div>
 </template>
 
 <script>
 import { searchRoute } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
+import Settings from '@/components/Settings.vue'
 export default {
     name: 'Home',
-    components: { NetworkErr },
+    components: { NetworkErr, Settings },
     data() {
         return {
             networkErr: false,
             searchQuery: '', // 添加 searchQuery 绑定
             routeData: [],
-            loadingStatus: false
+            loadingStatus: false,
+            settingDialog: false
         }
     },
     computed: {
@@ -68,8 +73,8 @@ export default {
                 this.loadingStatus = false
             })
         },
-        navigateToSearch() {
-            this.$router.push('/search') // 跳转到 /search 页面
+        handleSettingBtnClick() {
+            this.settingDialog = true
         },
         navigateToRouteDetail(item) {
             this.$router.push({

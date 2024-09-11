@@ -14,6 +14,19 @@
       <v-footer app class="p-0">
         <BottomNavigation v-if="showBottomNavigation" />
       </v-footer>
+
+      <!-- 添加 v-dialog 显示正在获取数据 -->
+      <v-dialog v-model="isFetchingData" persistent max-width="290">
+        <v-card :title="fetchTitle">
+          <v-card-text>
+            <v-progress-circular indeterminate v-if="!isError" />
+            <div v-else>不妨试试重新加载？当然也很有可能是中转服务器/接口出错了（悲）</div>
+          </v-card-text>
+          <v-card-actions v-if="isError">
+            <v-btn color="primary" text @click="retryFetchRoutes">重新获取</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-app>
   </div>
 </template>
@@ -24,19 +37,59 @@ import BottomNavigation from './components/BottomNavigation.vue'
 import { computed, ref, onMounted } from 'vue'
 import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
 const route = useRoute()
-
 // 控制底部导航的显示逻辑
 const showBottomNavigation = computed(() => {
   return [null, '/', '/search', '/notice', '/favourite'].includes(route.path)
 })
-
 // 动态控制要缓存的页面
-const cachedPages = ref(['Home', 'Search', 'Notice', "Favourite"])  // 指定需要缓存的路由 name
+const cachedPages = ref(['Home', 'Search', 'Notice', 'Favourite'])  // 指定需要缓存的路由 name
+// 添加 v-dialog 的状态控制
+const isFetchingData = ref(false)
+const isLoading = ref(true)
+const isError = ref(false)
 
+const fetchTitle = ref('获取数据中......')
+// 封装获取数据的逻辑
+const fetchRoutes = async () => {
+  const cachedRoutes = localStorage.getItem('stored_data_routes')
+  if (!cachedRoutes) {
+    isFetchingData.value = true  // 弹出对话框
+  }
+  try {
+    isLoading.value = true
+    console.log('Fetching routes...')
+    fetchTitle.value = '获取数据中......'
+    await fetchRoutesIfNeeded()
+    console.log('Fetching completed')
+    // 设置状态
+    isLoading.value = false
+    isLoading.value = false
+    isFetchingData.value = false
+    isError.value = false
+    // 数据获取完成后发出全局事件
+    const event = new Event('routesUpdated')
+    window.dispatchEvent(event)
+  } catch (error) {
+    fetchTitle.value = '数据获取失败'
+    console.error('数据获取失败:', error)
+    isError.value = true
+    isLoading.value = false
+  }
+}
+
+// 调用获取数据
 onMounted(() => {
-  fetchRoutesIfNeeded()
+  fetchRoutes()
 })
+
+// 重新获取数据的按钮逻辑
+const retryFetchRoutes = () => {
+  isError.value = false
+  isLoading.value = true
+  fetchRoutes()
+}
 </script>
+
 
 <style>
 .v-application {

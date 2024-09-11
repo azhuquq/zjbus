@@ -57,14 +57,29 @@ export default {
     },
     computed: {
     },
-    mounted() {
+    activated() {
         this.getItems()
+
+        // 监听 routesUpdated 事件，当数据更新时重新加载数据
+        window.addEventListener('routesUpdated', this.getItems)
+    },
+    deactivated() {
+        // 组件销毁时移除事件监听
+        window.removeEventListener('routesUpdated', this.getItems)
     },
     methods: {
         getItems() {
-            const routes = localStorage.getItem('stored_data_routes') ? JSON.parse(localStorage.getItem('stored_data_routes')) : {}
-            console.log("🚩 ~ getItems ~ routes 👇\n", routes)
-            this.routeData = routes.lineinfos.filter(item => item.roadstatus === "0")
+            const storedRoutes = localStorage.getItem('stored_data_routes')
+            const routes = storedRoutes ? JSON.parse(storedRoutes) : null
+
+            if (routes && Array.isArray(routes.lineinfos)) {
+                // 如果 lineinfos 存在并且是数组，执行 filter
+                this.routeData = routes.lineinfos.filter(item => item.roadstatus === "0")
+            } else {
+                // 如果没有路由数据，设置 routeData 为一个空数组
+                this.routeData = []
+                console.warn("没有找到有效的路由数据，'stored_data_routes' 可能为空或不存在。")
+            }
         },
         handleSettingBtnClick() {
             this.settingDialog = true

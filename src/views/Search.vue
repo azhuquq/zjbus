@@ -1,20 +1,18 @@
 <template>
     <div id="app">
         <v-app-bar elevation="1">
-            <v-app-bar-title>搜索路线</v-app-bar-title>
+            <v-app-bar-title>搜索</v-app-bar-title>
         </v-app-bar>
-        <div class="">
-            <v-text-field v-model="searchQuery" ref="searchField" label="线路名称" hide-details
-                @update:modelValue="handleInput" />
-            <NetworkErr v-if="networkErr" class="my-2" />
-            <div v-if="searchQuery && searchQuery != ''" class="flex flex-col gap-2 mt-2">
-                <div class="w-full flex justify-center mt-16" v-if="loadingStatus === true">
-                    <v-progress-circular indeterminate />
-                </div>
-                <div v-else-if="routeData.length === 0">
+        <div class="flex flex-col gap-2">
+            <v-text-field v-model="startPointOrRouteName" label="路线名称/上车点" hide-details @input="handleSearch" />
+            <v-text-field v-if="startPointOrRouteName && startPointOrRouteName != ''" v-model="endPoint" label="下车点（可选）"
+                hide-details @input="handleSearch" />
+
+            <div v-if="startPointOrRouteName && startPointOrRouteName != ''" class="flex flex-col gap-2">
+                <div v-if="searchResults.length === 0">
                     <v-empty-state icon="ri:inbox-line" title="找不到结果"></v-empty-state>
                 </div>
-                <div v-else v-for="(item, index) in routeData" :key="index">
+                <div v-else v-for="(item, index) in searchResults" :key="index">
                     <v-card @click="navigateToRouteDetail(item)">
                         <v-card-text>
                             <div class="flex flex-row gap-2 align-center justify-between">
@@ -41,64 +39,131 @@
                 </div>
             </div>
             <div v-else class="w-full text-center mt-4">
-                输入路线名称以开始搜索
+                输入路线名称或上车点以开始搜索
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import { searchRoute } from '@/api/wechatApi'
-import NetworkErr from '@/components/NetworkErr.vue'
-import debounce from 'lodash/debounce'
-
 export default {
     name: 'Search',
-    components: { NetworkErr },
+    mounted() {
+        this.handleSearch()
+    },
     data() {
         return {
-            networkErr: false,
-            searchQuery: '',
-            routeData: [],
-            loadingStatus: false,
-            firstInput: true
+            startPointOrRouteName: '',  // 保存用户输入的站点名称或路线名称
+            endPoint: '',
+            searchResults: [],
+            loadingStatus: false
         }
     },
-    mounted() {
-        this.$nextTick(() => {
-            this.$refs.searchField.focus()
-        })
-    },
-    created() {
-        // 创建防抖函数，避免频繁请求
-        this.debouncedFetchSearchData = debounce(this.fetchSearchData, 500)
-    },
     methods: {
-        async fetchSearchData() {
-            this.networkErr = false
-            this.loadingStatus = true
-            await searchRoute({ scontent: this.searchQuery }).then(res => {
-                console.log("🚩 ~ searchRoute ~ res 👇\n", res)
-                this.routeData = res.lineinfos
-            }).catch(error => {
-                this.networkErr = true
-            }).finally(() => {
-                this.loadingStatus = false
-            })
-        },
-        handleInput(newValue) {
-            this.searchQuery = newValue.trim()
-            if (this.searchQuery) {
-                if (this.firstInput) {
-                    this.fetchSearchData()
-                    this.firstInput = false  // 首次输入完成，标记为false
-                } else {
-                    this.debouncedFetchSearchData()
+        handleSearch() {
+            if (this.startPointOrRouteName) {
+                this.loadingStatus = true // 开启loading
+                const routes = localStorage.getItem('routes') ? JSON.parse(localStorage.getItem('routes')) : {}
+                const linesData = routes.lineinfos || []
+
+                if (!Array.isArray(linesData) || linesData.length === 0) {
+                    this.searchResults = []
+                    this.loadingStatus = false
+                    return
                 }
+
+                // 如果输入了终点站，则只根据上车点和下车点匹配，不根据路线名称匹配
+                this.searchResults = this.findBusRoute(this.startPointOrRouteName, this.endPoint, linesData)
+                this.loadingStatus = false
             } else {
-                this.routeData = []
-                this.firstInput = true  // 如果输入为空，重置为首次输入
+                this.searchResults = []
             }
+        },
+        findBusRoute(startStationOrRoute, endStation, linesData) {
+            const matchingRoutes = []
+            const seenRoutes = new Set()
+
+            // 1. 如果有终点站，只根据上车点和终点站匹配
+            if (endStation && endStation !== '') {
+                linesData.forEach((line) => {
+                    const busStations = line.busstation
+                    const matchingStartStations = busStations.filter(station => station.stationname.includes(startStationOrRoute))
+                    const matchingEndStations = busStations.filter(station => station.stationname.includes(endStation))
+
+                    matchingStartStations.forEach(start => {
+                        matchingEndStations.forEach(end => {
+                            const startStationNo = Number(start.stationno)
+                            const endStationNo = Number(end.stationno)
+
+                            if (endStationNo > startStationNo) {
+                                const uniqueKey = `${line.roadid}-${line.roadstatus}`
+                                if (!seenRoutes.has(uniqueKey)) {
+                                    seenRoutes.add(uniqueKey)
+                                    matchingRoutes.push({
+                                        lastsite: line.lastsite,
+                                        roadid: line.roadid,
+                                        roadstatus: line.roadstatus,
+                                        lasttime: line.lasttime,
+                                        ticketprice: line.ticketprice,
+                                        roadname: line.roadname,
+                                        firstsite: line.firstsite,
+                                        firsttime: line.firsttime,
+                                        autooperation: line.autooperation
+                                    })
+                                }
+                            }
+                        })
+                    })
+                })
+            } else {
+                // 2. 如果没有终点站，优先根据路线名称匹配，然后根据上车点匹配
+                linesData.forEach((line) => {
+                    // 优先匹配路线名称
+                    if (line.roadname.includes(startStationOrRoute)) {
+                        const uniqueKey = `${line.roadid}-${line.roadstatus}`
+                        if (!seenRoutes.has(uniqueKey)) {
+                            seenRoutes.add(uniqueKey)
+                            matchingRoutes.push({
+                                lastsite: line.lastsite,
+                                roadid: line.roadid,
+                                roadstatus: line.roadstatus,
+                                lasttime: line.lasttime,
+                                ticketprice: line.ticketprice,
+                                roadname: line.roadname,
+                                firstsite: line.firstsite,
+                                firsttime: line.firsttime,
+                                autooperation: line.autooperation
+                            })
+                        }
+                    }
+                })
+
+                // 其次匹配上车点
+                linesData.forEach((line) => {
+                    const busStations = line.busstation
+                    const matchingStartStations = busStations.filter(station => station.stationname.includes(startStationOrRoute))
+
+                    matchingStartStations.forEach(start => {
+                        const uniqueKey = `${line.roadid}-${line.roadstatus}`
+                        if (!seenRoutes.has(uniqueKey)) {
+                            seenRoutes.add(uniqueKey)
+                            matchingRoutes.push({
+                                lastsite: line.lastsite,
+                                roadid: line.roadid,
+                                roadstatus: line.roadstatus,
+                                lasttime: line.lasttime,
+                                ticketprice: line.ticketprice,
+                                roadname: line.roadname,
+                                firstsite: line.firstsite,
+                                firsttime: line.firsttime,
+                                autooperation: line.autooperation
+                            })
+                        }
+                    })
+                })
+            }
+
+            return matchingRoutes
         },
         navigateToRouteDetail(item) {
             this.$router.push({

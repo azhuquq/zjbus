@@ -4,7 +4,6 @@ import Search from '@/views/Search.vue'
 import Notice from '@/views/Notice.vue'
 import RouteDetail from '@/views/RouteDetail.vue'
 import Favourite from '@/views/Favourite.vue'
-import Planning from '@/views/Planning.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,7 +11,6 @@ const router = createRouter({
     { path: '/', name: 'Home', component: Home },
     { path: '/search', name: 'Search', component: Search },
     { path: '/notice', name: 'Notice', component: Notice },
-    { path: '/planning', name: 'Planning', component: Planning },
     { path: '/routedetail', name: 'RouteDetail', component: RouteDetail, meta: { title: '路线详情' } },
     { path: '/favourite', name: 'Favourite', component: Favourite }
   ]

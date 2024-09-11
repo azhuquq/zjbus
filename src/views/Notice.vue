@@ -7,7 +7,7 @@
         </template>
       </v-app-bar>
       <NetworkErr v-if="networkErr" class="mb-4" />
-      <v-infinite-scroll :items="noticeItems" :onLoad="onLoad" class="flex flex-col w-full gap-4" side="end">
+      <v-infinite-scroll :items="noticeItems" :onLoad="onLoad" class="flex flex-col w-full gap-2" side="end">
         <!-- 覆盖 start 和 end 的默认行为 -->
         <template v-slot:start="{ side, props }">
           <!-- 仅在有内容时渲染 -->
@@ -43,7 +43,7 @@
   
       <v-dialog v-model="aboutDialog">
         <v-card title="关于“湛江实时公交查询”项目" subtitle="阿朱@2024-09-04">
-          <v-card-text class="flex flex-col gap-4">
+          <v-card-text class="flex flex-col gap-2">
             <div>本项目由阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify、Vercel等框架开发</div>
             <div>阿朱官网: <a href="http://azhuquq.com">azhuquq.com</a></div>
             <div>微信: azhuquq (是本人，欢迎交流！)</div>

@@ -20,7 +20,7 @@ const webHttp = axios.create({
 })
 
 const getAll = axios.create({
-    baseURL: import.meta.env.VITE_BASE_API_WEB || '',
+    baseURL: import.meta.env.VITE_BASE_GET_ALL_API || '',
     timeout: 10000, // 请求超时时间
     headers: {
         'isazhuapp': 'true',
@@ -52,4 +52,7 @@ wechatHttp.interceptors.response.use(responseInterceptor, errorResponseIntercept
 webHttp.interceptors.request.use(requestInterceptor, errorRequestInterceptor)
 webHttp.interceptors.response.use(responseInterceptor, errorResponseInterceptor)
 
-export { wechatHttp, webHttp }
+getAll.interceptors.request.use(requestInterceptor, errorRequestInterceptor)
+getAll.interceptors.response.use(responseInterceptor, errorResponseInterceptor)
+
+export { wechatHttp, webHttp, getAll }

@@ -7,7 +7,7 @@
             </template>
         </v-app-bar>
         <NetworkErr v-if="networkErr" class="mb-4"/>
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-2">
             <div class="w-full flex justify-center mt-16" v-if="loadingStatus === true">
                 <v-progress-circular indeterminate />
             </div>

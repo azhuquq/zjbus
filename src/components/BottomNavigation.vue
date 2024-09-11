@@ -13,6 +13,10 @@
                 <v-icon>{{ getIcon('/search', 'search') }}</v-icon>
                 <span>搜索</span>
             </v-btn>
+            <v-btn @click="navigateTo('/planning')" value="/planning" rounded="pill">
+                <v-icon>{{ getIcon('/planning', 'signpost') }}</v-icon>
+                <span>站点</span>
+            </v-btn>
             <v-btn @click="navigateTo('/notice')" value="/notice" rounded="pill">
                 <v-icon>{{ getIcon('/notice', 'sticky-note') }}</v-icon>
                 <span>通告</span>

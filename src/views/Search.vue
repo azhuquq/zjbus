@@ -4,9 +4,10 @@
             <v-app-bar-title>搜索路线</v-app-bar-title>
         </v-app-bar>
         <div class="">
-            <v-text-field v-model="searchQuery" ref="searchField" label="线路名称" hide-details />
+            <v-text-field v-model="searchQuery" ref="searchField" label="线路名称" hide-details
+                @update:modelValue="handleInput" />
             <NetworkErr v-if="networkErr" class="my-2" />
-            <div v-if="searchQuery && searchQuery != ''" class="flex flex-col gap-4 mt-2">
+            <div v-if="searchQuery && searchQuery != ''" class="flex flex-col gap-2 mt-2">
                 <div class="w-full flex justify-center mt-16" v-if="loadingStatus === true">
                     <v-progress-circular indeterminate />
                 </div>
@@ -40,7 +41,7 @@
                 </div>
             </div>
             <div v-else class="w-full text-center mt-4">
-                输入线路名称以开始搜索
+                输入路线名称以开始搜索
             </div>
         </div>
     </div>
@@ -49,37 +50,24 @@
 <script>
 import { searchRoute } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
-// 引入防抖函数
 import debounce from 'lodash/debounce'
 
 export default {
-    name:'Search',
+    name: 'Search',
     components: { NetworkErr },
     data() {
         return {
             networkErr: false,
             searchQuery: '',
             routeData: [],
-            loadingStatus: false
+            loadingStatus: false,
+            firstInput: true
         }
     },
     mounted() {
         this.$nextTick(() => {
             this.$refs.searchField.focus()
         })
-    },
-    watch: {
-        searchQuery(newQuery) {
-            if (newQuery.trim() !== '') {
-                // 首次输入立即触发搜索
-                this.fetchSearchData()
-
-                // 后续输入使用防抖处理，避免频繁请求
-                this.debouncedFetchSearchData()
-            } else {
-                this.routeData = []
-            }
-        }
     },
     created() {
         // 创建防抖函数，避免频繁请求
@@ -97,6 +85,20 @@ export default {
             }).finally(() => {
                 this.loadingStatus = false
             })
+        },
+        handleInput(newValue) {
+            this.searchQuery = newValue.trim()
+            if (this.searchQuery) {
+                if (this.firstInput) {
+                    this.fetchSearchData()
+                    this.firstInput = false  // 首次输入完成，标记为false
+                } else {
+                    this.debouncedFetchSearchData()
+                }
+            } else {
+                this.routeData = []
+                this.firstInput = true  // 如果输入为空，重置为首次输入
+            }
         },
         navigateToRouteDetail(item) {
             this.$router.push({

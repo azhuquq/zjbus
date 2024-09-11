@@ -11,11 +11,17 @@ export default defineConfig({
     vueDevTools(),
   ],
   server: {
+    port: 5173,
     proxy: {
       '/wechatapi': {
         target: 'http://wechat.zhjgongjiao.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/wechatapi/, ''),
+      },
+      '/getallapi': {
+        target: 'http://wechat.zhjgongjiao.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/getallapi/, ''),
       },
       '/websiteapi': {
         target: 'http://zhjgongjiao.com',

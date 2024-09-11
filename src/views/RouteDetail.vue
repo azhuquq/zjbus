@@ -20,8 +20,8 @@
                 <v-btn icon="ri:arrow-left-right-line" @click="changeDirection()"></v-btn>
             </template>
         </v-app-bar>
-        <NetworkErr v-if="networkErr.info || networkErr.live" class="mb-4" />
-        <div v-if="routeinfo && routeinfo.busstation" class="flex flex-col gap-4">
+        <NetworkErr v-if="networkErr.info || networkErr.live" class="mb-2" />
+        <div v-if="routeinfo && routeinfo.busstation" class="flex flex-col gap-2">
             <v-card class="bg-indigo">
                 <v-card-text>
                     <div class="flex flex-col gap-2">
@@ -78,7 +78,7 @@
                                 <v-icon>ri:navigation-line</v-icon>
                             </div>
                         </div>
-                        <v-divider class="my-2" />
+                        <v-divider class="my-1" />
                         <!-- {{ item }} -->
                         <div v-if="getBusForStation(item) && getBusForStation(item).length > 0">
                             <!-- <div v-if="true"> -->

@@ -21,18 +21,23 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router'
 import BottomNavigation from './components/BottomNavigation.vue'
-import { computed, ref } from 'vue'
-
+import { computed, ref, onMounted } from 'vue'
+import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
 const route = useRoute()
 
 // 控制底部导航的显示逻辑
 const showBottomNavigation = computed(() => {
-  return [null, '/', '/search', '/notice', '/favourite'].includes(route.path)
+  return [null, '/', '/search', '/notice', '/favourite', '/planning'].includes(route.path)
 })
 
 // 动态控制要缓存的页面
-const cachedPages = ref(['Home', 'Search', 'Notice', "Favourite"])  // 指定需要缓存的路由 name
+const cachedPages = ref(['Home', 'Search', 'Notice', "Favourite", "Planning"])  // 指定需要缓存的路由 name
+
+onMounted(() => {
+  fetchRoutesIfNeeded()
+})
 </script>
+
 <style>
 .v-application {
   background-color: #F5F5F5;

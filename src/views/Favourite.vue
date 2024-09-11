@@ -23,7 +23,7 @@
             </v-empty-state>
         </div>
         <!-- 上面的不用改 -->
-        <div v-else class="flex flex-col gap-4">
+        <div v-else class="flex flex-col gap-2">
             <!-- 如果任一线路请求失败，显示网络错误组件 -->
             <NetworkErr v-if="hasErrorStat" />
             <v-card v-for="(item, index) in mergedFavourites" :key="index">

@@ -19,6 +19,14 @@ const webHttp = axios.create({
     },
 })
 
+const getAll = axios.create({
+    baseURL: import.meta.env.VITE_BASE_API_WEB || '',
+    timeout: 10000, // 请求超时时间
+    headers: {
+        'isazhuapp': 'true',
+    },
+})
+
 // 请求拦截器
 const requestInterceptor = (config) => {
     return config

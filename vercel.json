@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/getallapi/:path*",
+            "destination": "http://wechat.zhjgongjiao.com/:path*"
+        },
+        {
             "source": "/webimg/:path*",
             "destination": "http://www.zhjgongjiao.com/uploads/:path*"
         },

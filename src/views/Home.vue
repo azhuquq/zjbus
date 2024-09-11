@@ -2,9 +2,9 @@
     <div id="app">
         <v-app-bar elevation="1">
             <v-app-bar-title>湛江公交</v-app-bar-title>
-            <template v-slot:append>
+            <!-- <template v-slot:append>
                 <v-btn icon="ri:settings-5-line" @click="handleSettingBtnClick()"></v-btn>
-            </template>
+            </template> -->
         </v-app-bar>
         <NetworkErr v-if="networkErr" class="mb-4" />
         <div class="flex flex-col gap-2">
@@ -58,20 +58,13 @@ export default {
     computed: {
     },
     mounted() {
-        this.fetchSearchData()
+        this.getItems()
     },
     methods: {
-        fetchSearchData() {
-            this.networkErr = false
-            this.loadingStatus = true
-            searchRoute().then(res => {
-                console.log("🚩 ~ searchRoute ~ res 👇\n", res)
-                this.routeData = res.lineinfos.filter(item => item.roadstatus === "0")
-            }).catch(err => {
-                this.networkErr = true
-            }).finally(res => {
-                this.loadingStatus = false
-            })
+        getItems() {
+            const routes = localStorage.getItem('stored_data_routes') ? JSON.parse(localStorage.getItem('stored_data_routes')) : {}
+            console.log("🚩 ~ getItems ~ routes 👇\n", routes)
+            this.routeData = routes.lineinfos.filter(item => item.roadstatus === "0")
         },
         handleSettingBtnClick() {
             this.settingDialog = true

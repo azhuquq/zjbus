@@ -2,7 +2,7 @@ import { getAllRoute } from '@/api/getAll'
 
 export const fetchRoutesIfNeeded = async () => {
     const today = new Date().toLocaleDateString()
-    const cachedRoutes = localStorage.getItem('routes')
+    const cachedRoutes = localStorage.getItem('stored_data_routes')
     const routes = cachedRoutes ? JSON.parse(cachedRoutes) : null
     if (routes && routes.version === today) {
         console.log("今天已经获取过数据")
@@ -13,7 +13,7 @@ export const fetchRoutesIfNeeded = async () => {
         console.log("🚩 ~ fetchRoutesIfNeeded ~ routes 👇\n", newRoutes)
         if (newRoutes.lineinfos && newRoutes.lineinfos.length > 0) {
             newRoutes.version = today
-            localStorage.setItem('routes', JSON.stringify(newRoutes))
+            localStorage.setItem('stored_data_routes', JSON.stringify(newRoutes))
         }
     } catch (error) {
         console.error('Failed to fetch routes:', error)

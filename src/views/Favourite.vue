@@ -123,13 +123,13 @@ export default {
     },
     mounted() {
         // 从 localStorage 中读取收藏的线路，并进行合并
-        this.favourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+        this.favourites = JSON.parse(localStorage.getItem('stored_data_favouriteRoutes')) || []
         this.mergeFavourites() // 初始化合并收藏路线
         this.favouritesSnapshot = JSON.stringify(this.favourites) // 保存收藏列表快照
         this.refresh() // 初次加载时自动刷新
     },
     activated() {
-        const currentFavourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+        const currentFavourites = JSON.parse(localStorage.getItem('stored_data_favouriteRoutes')) || []
         if (JSON.stringify(currentFavourites) !== JSON.stringify(this.favourites)) {
             this.favourites = currentFavourites
             this.mergeFavourites() // 如果发生变化，重新合并收藏路线

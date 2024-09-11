@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <v-app-bar elevation="1">
-            <v-app-bar-title>搜索</v-app-bar-title>
+            <v-app-bar-title>{{ searchTitle }}</v-app-bar-title>
         </v-app-bar>
         <div class="flex flex-col gap-2">
             <v-text-field v-model="startPointOrRouteName" label="路线名称/上车点" hide-details @input="handleSearch" />
@@ -56,14 +56,15 @@ export default {
             startPointOrRouteName: '',  // 保存用户输入的站点名称或路线名称
             endPoint: '',
             searchResults: [],
-            loadingStatus: false
+            loadingStatus: false,
+            searchTitle: '搜索站点/路线'
         }
     },
     methods: {
         handleSearch() {
             if (this.startPointOrRouteName) {
                 this.loadingStatus = true // 开启loading
-                const routes = localStorage.getItem('routes') ? JSON.parse(localStorage.getItem('routes')) : {}
+                const routes = localStorage.getItem('stored_data_routes') ? JSON.parse(localStorage.getItem('stored_data_routes')) : {}
                 const linesData = routes.lineinfos || []
 
                 if (!Array.isArray(linesData) || linesData.length === 0) {
@@ -85,6 +86,7 @@ export default {
 
             // 1. 如果有终点站，只根据上车点和终点站匹配
             if (endStation && endStation !== '') {
+                this.searchTitle = '搜索站点'
                 linesData.forEach((line) => {
                     const busStations = line.busstation
                     const matchingStartStations = busStations.filter(station => station.stationname.includes(startStationOrRoute))
@@ -116,6 +118,7 @@ export default {
                     })
                 })
             } else {
+                this.searchTitle = '搜索站点/路线'
                 // 2. 如果没有终点站，优先根据路线名称匹配，然后根据上车点匹配
                 linesData.forEach((line) => {
                     // 优先匹配路线名称

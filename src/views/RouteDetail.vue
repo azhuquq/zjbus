@@ -45,8 +45,7 @@
                 </v-card-text>
             </v-card>
             <MapContainer ref="mapContainer" :busStations="routeinfo.busstation" :liveData="liveData"
-                :finalDir="finalDir" style="height: 38vh;top:64px"
-                class="sticky z-10 elevation-1 rounded" />
+                :finalDir="finalDir" style="height: 38vh;top:64px" class="sticky z-10 elevation-1 rounded" />
 
             <div v-if="hasFetched && hasFetched === true">
                 <div v-if="liveData && liveData.length > 0">
@@ -277,12 +276,12 @@ export default {
             this.$refs.qrCodePanel.openSheet()
         },
         checkIfFavourite() {
-            const favourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+            const favourites = JSON.parse(localStorage.getItem('stored_data_favouriteRoutes')) || []
             this.isFavourite = favourites.some(route => route.routeid === this.routeid && route.dir === this.dir)
         },
         // 收藏/取消收藏线路
         toggleFavourite() {
-            const favourites = JSON.parse(localStorage.getItem('favouriteRoutes')) || []
+            const favourites = JSON.parse(localStorage.getItem('stored_data_favouriteRoutes')) || []
             const existingIndex = favourites.findIndex(route => route.routeid === this.routeid && route.dir === this.finalDir)
             if (existingIndex > -1) {
                 // 如果已经收藏，则取消收藏
@@ -301,7 +300,7 @@ export default {
                 this.isFavourite = true
             }
 
-            localStorage.setItem('favouriteRoutes', JSON.stringify(favourites))
+            localStorage.setItem('stored_data_favouriteRoutes', JSON.stringify(favourites))
         },
         updateFilteredBuses() {
             this.filteredBuses = this.liveData.filter(bus => bus.roadstatus == this.finalDir)

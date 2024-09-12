@@ -5,7 +5,7 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader"
 import gcoord from 'gcoord'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import "moment/dist/locale/zh-cn"
 
 export default {
@@ -18,7 +18,7 @@ export default {
             type: Array,
             default: () => []
         },
-        finalDir: {
+        dir: {
             type: String,
             default: '0'
         },
@@ -38,6 +38,10 @@ export default {
         this.map?.destroy()
     },
     methods: {
+        clearBusMarkers() {
+            this.busMarkers.forEach(marker => marker.setMap(null)) // 清除之前的公交车标记
+            this.busMarkers = []
+        },
         // 加载地图
         loadMap() {
             window._AMapSecurityConfig = {
@@ -177,8 +181,7 @@ export default {
         // 添加符合条件的公交车标记
         addBusMarkers() {
             if (this.map && this.liveData.length > 0) {
-                // 过滤 liveData 中 roadstatus 和 finalDir 匹配的车辆
-                const filteredBuses = this.liveData.filter(bus => bus.roadstatus === this.finalDir)
+                const filteredBuses = this.liveData.filter(bus => bus.roadstatus === this.dir)
 
                 filteredBuses.forEach(busData => {
                     const { lng, lat } = this.parseLatLng(busData.lng, busData.lat)
@@ -218,6 +221,7 @@ export default {
             }
         },
 
+
         // 展示选中的站点详细信息
         showStationDetails(station) {
             const { lng, lat } = this.parseLatLng(station.lng, station.lat)
@@ -247,7 +251,7 @@ export default {
         formatGpsTime(gpssendtime) {
             moment.locale('') // 设置为中文
             if (gpssendtime) {
-                const time = moment(gpssendtime, 'YYYY-MM-DD HH:mm:ss')
+                const time = moment.tz(gpssendtime, 'YYYY-MM-DD HH:mm:ss', 'Asia/Shanghai')
                 return time.fromNow()
             }
         }

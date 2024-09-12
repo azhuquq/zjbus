@@ -27,6 +27,9 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <v-snackbar v-model="snackbar" :timeout="3000">
+        {{ snackbarText }}
+      </v-snackbar>
     </v-app>
   </div>
 </template>
@@ -34,7 +37,7 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router'
 import BottomNavigation from './components/BottomNavigation.vue'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
 const route = useRoute()
 // 控制底部导航的显示逻辑
@@ -48,7 +51,23 @@ const isFetchingData = ref(false)
 const isLoading = ref(true)
 const isError = ref(false)
 
+// 添加 snackbar 的状态控制
+const snackbar = ref(false)
+const snackbarText = ref('')
+
+// fetch 状态相关
 const fetchTitle = ref('获取数据中......')
+
+// 监听事件
+const onRoutesDataBackgroundUpdated = (event) => {
+  snackbarText.value = `已在后台更新今日数据 (${event.detail.date})`
+  snackbar.value = true
+}
+// 监听事件
+const onRoutesDataBackgroundUpdateFailed = (event) => {
+  snackbarText.value = `后台更新数据失败`
+  snackbar.value = true
+}
 // 封装获取数据的逻辑
 const fetchRoutes = async () => {
   const cachedRoutes = localStorage.getItem('stored_data_routes')
@@ -67,7 +86,7 @@ const fetchRoutes = async () => {
     isFetchingData.value = false
     isError.value = false
     // 数据获取完成后发出全局事件
-    const event = new Event('routesUpdated')
+    const event = new Event('routesDataInitialized')
     window.dispatchEvent(event)
   } catch (error) {
     fetchTitle.value = '数据获取失败'
@@ -80,8 +99,16 @@ const fetchRoutes = async () => {
 // 调用获取数据
 onMounted(() => {
   fetchRoutes()
+  // 监听 routesDataUpdated 事件
+  window.addEventListener('routesDataBackgroundUpdated', onRoutesDataBackgroundUpdated)
+  window.addEventListener('routesDataBackgroundUpdateFailed', onRoutesDataBackgroundUpdateFailed)
 })
 
+onUnmounted(() => {
+  // 移除事件监听
+  window.removeEventListener('routesDataBackgroundUpdated', onRoutesDataBackgroundUpdated)
+  window.removeEventListener('routesDataBackgroundUpdateFailed', onRoutesDataBackgroundUpdateFailed)
+})
 // 重新获取数据的按钮逻辑
 const retryFetchRoutes = () => {
   isError.value = false

@@ -2,11 +2,10 @@
     <div id="app">
         <v-app-bar elevation="1">
             <v-app-bar-title>湛江公交</v-app-bar-title>
-            <!-- <template v-slot:append>
+            <template v-slot:append>
                 <v-btn icon="ri:settings-5-line" @click="handleSettingBtnClick()"></v-btn>
-            </template> -->
+            </template>
         </v-app-bar>
-        <NetworkErr v-if="networkErr" class="mb-4" />
         <div class="flex flex-col gap-2">
             <div class="w-full flex justify-center mt-16" v-if="loadingStatus === true">
                 <v-progress-circular indeterminate />
@@ -48,7 +47,6 @@ export default {
     components: { NetworkErr, Settings },
     data() {
         return {
-            networkErr: false,
             searchQuery: '', // 添加 searchQuery 绑定
             routeData: [],
             loadingStatus: false,
@@ -59,13 +57,10 @@ export default {
     },
     activated() {
         this.getItems()
-
-        // 监听 routesUpdated 事件，当数据更新时重新加载数据
-        window.addEventListener('routesUpdated', this.getItems)
+        window.addEventListener('routesDataInitialized', this.getItems)
     },
     deactivated() {
-        // 组件销毁时移除事件监听
-        window.removeEventListener('routesUpdated', this.getItems)
+        window.removeEventListener('routesDataInitialized', this.getItems)
     },
     methods: {
         getItems() {

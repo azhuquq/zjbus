@@ -20,7 +20,7 @@
                 <v-btn icon="ri:arrow-left-right-line" @click="changeDirection()"></v-btn>
             </template>
         </v-app-bar>
-        <NetworkErr v-if="networkErr.info || networkErr.live" class="mb-2" />
+        <NetworkErr v-if="networkErr.live" class="mb-2" />
         <div v-if="routeinfo && routeinfo.busstation" class="flex flex-col gap-2">
             <v-card class="bg-indigo">
                 <v-card-text>
@@ -44,9 +44,8 @@
                     </div>
                 </v-card-text>
             </v-card>
-            <MapContainer ref="mapContainer" :busStations="routeinfo.busstation" :liveData="liveData"
-                :finalDir="finalDir" style="height: 38vh;top:64px" class="sticky z-10 elevation-1 rounded" />
-
+            <MapContainer ref="mapContainer" :busStations="routeinfo.busstation" :liveData="liveData" :dir="dir"
+                style="height: 38vh;top:64px" class="sticky z-10 elevation-1 rounded" />
             <div v-if="hasFetched && hasFetched === true">
                 <div v-if="liveData && liveData.length > 0">
                     <v-alert v-if="filteredBuses.length > 0" icon="ri:bus-line" type="success">
@@ -112,7 +111,7 @@ import { getRouteDetail, getBusLiveStatus } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
 import MPQRCodePanel from '@/components/MPQRCodePanel.vue'
 import MapContainer from '@/components/MapContainer.vue'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import "moment/dist/locale/zh-cn"
 export default {
     components: { NetworkErr, MPQRCodePanel, MapContainer },
@@ -133,7 +132,6 @@ export default {
             nextStartTime: '',
             intervalId: null, // 用于存储定时器ID
             isWeChat: false,
-            finalDir: '0',
             filteredBuses: []
         }
     },
@@ -142,17 +140,13 @@ export default {
         this.routeid = this.$route.query.id
         if (this.$route.query.dir) {
             this.dir = this.$route.query.dir
-            this.finalDir = this.dir
         }
 
         // 判断是否为微信环境（检测 MicroMessenger 或 WeChat）
         this.isWeChat = /MicroMessenger|WeChat/i.test(navigator.userAgent)
         // this.isWeChat = true
-
+        window.addEventListener('routesDataInitialized', this.fetchRouteDetail)
         this.fetchRouteDetail()
-        this.intervalId = setInterval(() => {
-            this.fetchLive()
-        }, 8000)
         this.checkIfFavourite()
     },
     beforeUnmount() {
@@ -160,6 +154,7 @@ export default {
         if (this.intervalId) {
             clearInterval(this.intervalId)
         }
+        window.removeEventListener('routesDataInitialized', this.fetchRouteDetail)
     },
     unmounted() {
         // 在组件销毁时清除定时器
@@ -171,7 +166,7 @@ export default {
         formatGpsTime(gpssendtime) {
             if (gpssendtime) {
                 // 使用 moment 解析时间
-                const time = moment(gpssendtime, 'YYYY-MM-DD HH:mm:ss')
+                const time = moment.tz(gpssendtime, 'YYYY-MM-DD HH:mm:ss', 'Asia/Shanghai')
                 // 获取相对于现在的时间差
                 return time.fromNow() // 例如：'a few seconds ago' 或 '2 minutes ago'
             }
@@ -181,20 +176,23 @@ export default {
             this.$refs.mapContainer.showStationDetails(station)
         },
         async fetchRouteDetail() {
-            this.networkErr.info = false
-            this.isLoading = true
-            await getRouteDetail({ routeid: this.routeid }).then(res => {
-                // 使用 filter 筛选出 roadstatus 为 this.dir 的对象
-                this.routeinfo = res.lineinfos ? res.lineinfos.filter(route => route.roadstatus == this.dir)[0] : []
-                this.title = `${this.routeinfo.roadname}(开往${this.routeinfo.lastsite})`
-                this.finalDir = this.routeinfo.roadstatus
+            const storedRoutes = localStorage.getItem('stored_data_routes')
+            const routes = storedRoutes ? JSON.parse(storedRoutes) : null
+            if (routes && Array.isArray(routes.lineinfos)) {
+                // 如果 lineinfos 存在并且是数组，执行 filter
+                const routeinfo = routes.lineinfos.filter(route => route.roadid == this.routeid && route.roadstatus == this.dir)[0] || {}
+                this.routeinfo = routeinfo
+                this.title = `${routeinfo.roadname}(开往${routeinfo.lastsite})`
+                console.log("🚩 ~ fetchRouteDetail ~ routeinfo 👇\n", routeinfo)
                 this.fetchLive()
-            }).catch(error => {
-                console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
-                this.networkErr.info = true
-            }).finally(() => {
-                this.isLoading = false
-            })
+                if (!this.intervalId || this.intervalId == null) {
+                    this.intervalId = setInterval(() => {
+                        this.fetchLive()
+                    }, 8000)
+                }
+            } else {
+                this.routeinfo = {}
+            }
         },
         changeDirection() {
             if (this.dir === '0') {
@@ -205,6 +203,7 @@ export default {
             this.hasFetched = false
             this.filteredBuses = []
             this.nextStartTime = ''
+            this.$refs.mapContainer.clearBusMarkers()
             this.fetchRouteDetail()
             this.checkIfFavourite()
         },
@@ -224,6 +223,7 @@ export default {
                     this.setPlantime(res.nearPlanTime)
                     this.hasFetched = true
                     this.updateFilteredBuses() // 更新 filteredBuses
+                    this.$refs.mapContainer.addBusMarkers()
                 }).catch(error => {
                     console.log("🚩 ~ getRouteDetail ~ error 👇\n", error)
                     this.networkErr.live = true
@@ -259,17 +259,13 @@ export default {
                 ...bus,
                 speed: (Number(bus.speed) / 10).toFixed(1) // 将 speed 除以 10 并保留一位小数
             })).filter(bus =>
-                bus.roadstatus == this.finalDir &&
+                bus.roadstatus == this.dir &&
                 bus.stationno == String(adjustedStationNo) &&
                 bus.sitename == item.stationname
             )
         },
         refresh() {
-            if (this.networkErr.info == true) {
-                this.fetchRouteDetail()
-            } else {
-                this.fetchLive()
-            }
+            this.fetchLive()
         },
         openQRCode() {
             // 调用子组件的 openSheet 方法来显示 bottom-sheet
@@ -282,9 +278,8 @@ export default {
         // 收藏/取消收藏线路
         toggleFavourite() {
             const favourites = JSON.parse(localStorage.getItem('stored_data_favouriteRoutes')) || []
-            const existingIndex = favourites.findIndex(route => route.routeid === this.routeid && route.dir === this.finalDir)
+            const existingIndex = favourites.findIndex(route => route.routeid === this.routeid && route.dir === this.dir)
             if (existingIndex > -1) {
-                // 如果已经收藏，则取消收藏
                 favourites.splice(existingIndex, 1)
                 this.isFavourite = false
             } else {
@@ -292,7 +287,7 @@ export default {
                 const routeData = {
                     routeid: this.routeid,
                     title: this.title,
-                    dir: this.finalDir,
+                    dir: this.dir,
                     routename: this.routeinfo.roadname,
                     laststation: this.routeinfo.lastsite
                 }
@@ -303,7 +298,7 @@ export default {
             localStorage.setItem('stored_data_favouriteRoutes', JSON.stringify(favourites))
         },
         updateFilteredBuses() {
-            this.filteredBuses = this.liveData.filter(bus => bus.roadstatus == this.finalDir)
+            this.filteredBuses = this.liveData.filter(bus => bus.roadstatus == this.dir)
         },
 
     }

@@ -119,9 +119,8 @@ export default {
                     routeid: item.routeid,
                     dir: item.dir,
                     laststation: item.laststation,
-                    selected: item.selected, // selected 用于选择的逻辑
-                    title: item.title,
-                    routename: item.routename // 在 direction 中传递 routename
+                    selected: item.selected,
+                    routename: item.routename
                 })
             })
             this.mergedFavouritesData = Object.values(grouped)

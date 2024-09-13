@@ -179,7 +179,6 @@ export default {
                     routeid: fav.routeid,
                     dir: fav.dir,
                     laststation: fav.laststation,
-                    title: fav.title
                 })
             })
             this.mergedFavourites = Object.values(grouped)

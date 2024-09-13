@@ -193,7 +193,8 @@ export default {
                 const favourites = localStorage.getItem('stored_data_favouriteRoutes')
                 console.log("🚩 ~ exportFavourites ~ favourites 👇\n", favourites)
                 if (favourites) {
-                    const jsonFavourites = JSON.stringify(JSON.parse(favourites))
+                    const parsedFavourites = JSON.parse(favourites)
+                    const jsonFavourites = JSON.stringify(parsedFavourites)
                     const utf8Favourites = new TextEncoder().encode(jsonFavourites)
                     const base64Favourites = btoa(String.fromCharCode(...utf8Favourites))
                     const encodedFavourites = encodeURIComponent(base64Favourites)

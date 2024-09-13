@@ -285,7 +285,6 @@ export default {
                 // 如果没有收藏，则添加到收藏列表
                 const routeData = {
                     routeid: this.routeid,
-                    title: this.title,
                     dir: this.dir,
                     routename: this.routeinfo.roadname,
                     laststation: this.routeinfo.lastsite

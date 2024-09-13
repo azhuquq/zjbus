@@ -12,7 +12,7 @@ export const fetchRoutesIfNeeded = async (forceUpdate = false) => {
         return
     }
 
-    if (routes && routes.version !== today && forceUpdate == false) {
+    if (!forceUpdate && routes && routes.version !== today) {
         background = true
     }
 

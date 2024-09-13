@@ -45,24 +45,27 @@
                 <div v-else>不妨试试重新加载？当然也很有可能是中转服务器/接口出错了（悲）</div>
             </v-card-text>
             <v-card-actions v-if="isForceUpdateFail">
-                <v-btn color="primary" text @click="retryFetchRoutes">重新获取</v-btn>
+                <v-btn color="primary" text @click="refreshCache()">重新获取</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
     <v-dialog v-model="dataExportDialog">
         <v-card title="导出收藏数据">
             <v-card-text>
-                <div v-if="!dataExportStatus">数据导出失败</div>
-                <div v-else>
-                    <v-textarea label="数据导出结果" v-model="dataExportResult" readonly></v-textarea>
+                <div v-if="!dataExportStatus">{{ dataExportFailureReason }}</div>
+                <div v-else class="flex flex-col gap-4">
+                    <v-textarea label="导入数据链接" v-model="dataExportResult" readonly hide-details></v-textarea>
                     <div>您可以直接使用该链接来导入数据</div>
-                    <v-btn color="blue" class="ml-auto" icon="ri:file-copy-line"
-                        @click="handleCopy(dataExportResult)" />
+                    <div class="flex justify-end">
+                        <v-btn color="blue" class="ml-auto" @click="handleCopy(dataExportResult)" rounded="xl">
+                            <template v-slot:prepend>
+                                <v-icon>ri:file-copy-line</v-icon>
+                            </template>
+                            复制
+                        </v-btn>
+                    </div>
                 </div>
             </v-card-text>
-            <v-card-actions v-if="isForceUpdateFail">
-                <v-btn color="primary" text @click="retryFetchRoutes">重新获取</v-btn>
-            </v-card-actions>
         </v-card>
     </v-dialog>
     <v-dialog v-model="wipeDataDialog">
@@ -89,6 +92,7 @@ export default {
             // 导出数据
             dataExportDialog: false,
             dataExportStatus: false,
+            dataExportFailureReason: '数据导出失败',
             dataExportResult: '',
             // 清除数据
             wipeDataDialog: false,
@@ -129,20 +133,21 @@ export default {
                 const favourites = localStorage.getItem('stored_data_favouriteRoutes')
                 console.log("🚩 ~ exportFavourites ~ favourites 👇\n", favourites)
                 if (favourites) {
-                    // 处理非ASCII字符
                     const jsonFavourites = JSON.stringify(JSON.parse(favourites))
-                    const utf8Favourites = new TextEncoder().encode(jsonFavourites) // 将字符串编码为UTF-8
-                    const base64Favourites = btoa(String.fromCharCode(...utf8Favourites)) // 再将其转换为Base64
-                    const encodedFavourites = encodeURI(base64Favourites)
+                    const utf8Favourites = new TextEncoder().encode(jsonFavourites)
+                    const base64Favourites = btoa(String.fromCharCode(...utf8Favourites))
+                    const encodedFavourites = encodeURIComponent(base64Favourites)
                     const exportUrl = `${window.location.hostname}/import?data=${encodedFavourites}`
                     this.dataExportStatus = true
                     this.dataExportResult = exportUrl
                 } else {
                     this.dataExportStatus = false
+                    this.dataExportFailureReason = '无收藏数据'
                     console.warn('没有找到收藏数据')
                 }
             } catch (error) {
                 this.dataExportStatus = false
+                this.dataExportFailureReason = '导出收藏时出错'
                 console.error('导出收藏时出错:', error)
             }
         },

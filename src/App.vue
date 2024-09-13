@@ -27,8 +27,8 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-      <v-snackbar v-model="snackbar" :timeout="3000">
-        {{ snackbarText }}
+      <v-snackbar v-model="snackbar.show" :timeout="3000">
+        {{ snackbar.text }}
       </v-snackbar>
     </v-app>
   </div>
@@ -52,22 +52,21 @@ const isLoading = ref(true)
 const isError = ref(false)
 
 // 添加 snackbar 的状态控制
-const snackbar = ref(false)
-const snackbarText = ref('')
+const snackbar = ref({
+  show: false,  // 将属性名从 'open' 改为 'show'
+  text: ''
+})
 
 // fetch 状态相关
 const fetchTitle = ref('获取数据中......')
 
 // 监听事件
-const onRoutesDataBackgroundUpdated = (event) => {
-  snackbarText.value = `已在后台更新今日数据 (${event.detail.date})`
-  snackbar.value = true
+const onShowSnackbar = (event) => {
+  console.log("🚩 ~ onShowSnackbar ~ event 👇\n", event)
+  snackbar.value.text = `${event.detail.text}`
+  snackbar.value.show = true
 }
-// 监听事件
-const onRoutesDataBackgroundUpdateFailed = (event) => {
-  snackbarText.value = `后台更新数据失败`
-  snackbar.value = true
-}
+
 // 封装获取数据的逻辑
 const fetchRoutes = async () => {
   const cachedRoutes = localStorage.getItem('stored_data_routes')
@@ -99,15 +98,11 @@ const fetchRoutes = async () => {
 // 调用获取数据
 onMounted(() => {
   fetchRoutes()
-  // 监听 routesDataUpdated 事件
-  window.addEventListener('routesDataBackgroundUpdated', onRoutesDataBackgroundUpdated)
-  window.addEventListener('routesDataBackgroundUpdateFailed', onRoutesDataBackgroundUpdateFailed)
+  window.addEventListener('showSnackbar', onShowSnackbar)
 })
 
 onUnmounted(() => {
-  // 移除事件监听
-  window.removeEventListener('routesDataBackgroundUpdated', onRoutesDataBackgroundUpdated)
-  window.removeEventListener('routesDataBackgroundUpdateFailed', onRoutesDataBackgroundUpdateFailed)
+  window.removeEventListener('showSnackbar', onShowSnackbar)
 })
 // 重新获取数据的按钮逻辑
 const retryFetchRoutes = () => {

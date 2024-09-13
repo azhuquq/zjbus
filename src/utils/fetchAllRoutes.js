@@ -24,19 +24,19 @@ export const fetchRoutesIfNeeded = async (forceUpdate = false) => {
             newRoutes.version = today
             localStorage.setItem('stored_data_routes', JSON.stringify(newRoutes)) // 更新缓存
             if (background) {
-                const event = new CustomEvent('routesDataBackgroundUpdated', { detail: { date: today } })
+                const event = new CustomEvent('showSnackbar', { detail: { text: `已在后台更新今日${today}数据` } })
                 window.dispatchEvent(event)
             }
         } else {
             if (background) {
-                const event = new CustomEvent('routesDataBackgroundUpdateFailed', { detail: { date: today } })
+                const event = new CustomEvent('showSnackbar', { detail: { text: `后台更新数据失败` } })
                 window.dispatchEvent(event)
             }
             throw new Error('路由数据不完整')
         }
     } catch (error) {
         if (background) {
-            const event = new CustomEvent('routesDataBackgroundUpdateFailed', { detail: { date: today } })
+            const event = new CustomEvent('showSnackbar', { detail: { text: `后台更新数据失败` } })
             window.dispatchEvent(event)
         }
         console.error('Failed to fetch routes:', error)

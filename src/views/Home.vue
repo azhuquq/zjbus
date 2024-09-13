@@ -55,6 +55,10 @@ export default {
     },
     computed: {
     },
+    beforeRouteLeave(to, from, next) {
+        this.settingDialog = false
+        next()
+    },
     activated() {
         this.getItems()
         window.addEventListener('routesDataInitialized', this.getItems)

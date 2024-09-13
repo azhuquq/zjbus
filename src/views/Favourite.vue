@@ -96,7 +96,6 @@
 <script>
 import { getBusLiveStatus } from '@/api/wechatApi'
 import NetworkErr from '@/components/NetworkErr.vue'
-
 export default {
     name: 'Favourite',
     components: { NetworkErr },

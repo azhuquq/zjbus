@@ -8,13 +8,13 @@
                     </v-avatar>
                 </template>
             </v-list-item>
-            <!-- <v-list-item title="导入收藏" class="w-full">
+            <v-list-item title="导入收藏" class="w-full" @click="handleClickImport()">
                 <template v-slot:prepend>
                     <v-avatar color="brown">
                         <v-icon icon="ri:import-fill" />
                     </v-avatar>
                 </template>
-            </v-list-item>-->
+            </v-list-item>
             <v-list-item title="导出收藏" class="w-full" @click="handleClickExport()">
                 <template v-slot:prepend>
                     <v-avatar color="brown">
@@ -49,23 +49,39 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+    <v-dialog v-model="dataImportDialog">
+        <v-card title="导入收藏数据">
+            <v-card-text class="flex flex-col gap-4">
+                <div>在这里贴上数据链接</div>
+                <v-textarea label="数据链接" v-model="dataImportContent" hide-details="auto" :error="dataImportError"
+                    :error-messages="dataImportErrorMsg" @input="validateImportDataLink" />
+            </v-card-text>
+            <v-card-actions>
+                <v-btn text @click="dataImportDialog = false">取消</v-btn>
+                <v-btn color="primary" text @click="handleImport()" :disabled="dataImportError">下一步</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
     <v-dialog v-model="dataExportDialog">
         <v-card title="导出收藏数据">
             <v-card-text>
                 <div v-if="!dataExportStatus">{{ dataExportFailureReason }}</div>
                 <div v-else class="flex flex-col gap-4">
-                    <v-textarea label="导入数据链接" v-model="dataExportResult" readonly hide-details></v-textarea>
                     <div>您可以直接使用该链接来导入数据</div>
-                    <div class="flex justify-end">
+                    <v-textarea label="数据链接" v-model="dataExportResult" readonly hide-details></v-textarea>
+                    <div>
                         <v-btn color="blue" class="ml-auto" @click="handleCopy(dataExportResult)" rounded="xl">
                             <template v-slot:prepend>
                                 <v-icon>ri:file-copy-line</v-icon>
                             </template>
-                            复制
+                            复制链接
                         </v-btn>
                     </div>
                 </div>
             </v-card-text>
+            <v-card-actions>
+                <v-btn color="primary" text @click="dataExportDialog = false">关闭</v-btn>
+            </v-card-actions>
         </v-card>
     </v-dialog>
     <v-dialog v-model="wipeDataDialog">
@@ -89,6 +105,11 @@ export default {
             forceUpdateTitle: '刷新缓存中',
             forceUpdateDialog: false,
             isForceUpdateFail: false,
+            // 导入数据
+            dataImportDialog: false,
+            dataImportContent: '',
+            dataImportError: false,
+            dataImportErrorMsg: '',
             // 导出数据
             dataExportDialog: false,
             dataExportStatus: false,
@@ -101,6 +122,13 @@ export default {
                 open: false
             },
         }
+    },
+    beforeRouteLeave(to, from, next) {
+        this.forceUpdateDialog = false
+        this.dataImportDialog = false
+        this.dataExportDialog = false
+        this.wipeDataDialog = false
+        next()
     },
     methods: {
         async refreshCache(forceUpdate = true) {
@@ -124,9 +152,41 @@ export default {
             this.$router.push('/')
             this.$router.go(0)
         },
+        handleClickImport() {
+            this.dataImportDialog = true
+        },
         handleClickExport() {
             this.exportFavourites()
             this.dataExportDialog = true
+        },
+        validateImportDataLink() {
+            const importPattern = /\/import\?data=/
+            if (this.dataImportContent && importPattern.test(this.dataImportContent)) {
+                this.dataImportError = false
+                this.dataImportErrorMsg = ''
+            } else {
+                this.dataImportError = true
+                this.dataImportErrorMsg = '无效的数据链接'
+            }
+        },
+        handleImport() {
+            if (!this.dataImportError) {
+                // 使用正则提取数据
+                const importPattern = /import\?data=([^&]*)/
+                const match = this.dataImportContent.match(importPattern)
+                console.log("🚩 ~ handleImport ~ match 👇\n", match)
+                if (match && match[1]) {
+                    const data = match[1]
+                    console.log("🚩 ~ handleImport ~ data 👇\n", data)
+                    this.$router.push({
+                        path: '/import',
+                        query: { data: data }
+                    })
+                } else {
+                    this.dataImportError = true
+                    this.dataImportErrorMsg = '无法提取有效的数据'
+                }
+            }
         },
         exportFavourites() {
             try {

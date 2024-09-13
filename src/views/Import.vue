@@ -51,6 +51,7 @@
 </template>
 
 <script>
+import LZUTF8 from 'lzutf8-light'
 export default {
     data() {
         return {
@@ -87,14 +88,11 @@ export default {
                 const encodedData = this.$route.query.data
                 if (encodedData) {
                     const decodedURI = decodeURIComponent(encodedData)
-                    const base64Decoded = atob(decodedURI)
-                    const uint8Array = new Uint8Array([...base64Decoded].map(c => c.charCodeAt(0)))
-                    const jsonString = new TextDecoder().decode(uint8Array)
-                    const favouritesData = JSON.parse(jsonString)
+                    const decompressedData = LZUTF8.decompress(decodedURI, { inputEncoding: 'Base64' })
+                    const favouritesData = JSON.parse(decompressedData)
                     this.favouritesData = favouritesData.map(item => ({
                         ...item,
-                        selected: true,
-                        routename: item.routename // 如果没有 routename，设置默认值
+                        selected: true
                     }))
                     this.mergeFavouritesData() // 合并数据
                 } else {

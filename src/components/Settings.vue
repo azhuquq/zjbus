@@ -97,6 +97,7 @@
     </v-dialog>
 </template>
 <script>
+import LZUTF8 from 'lzutf8-light'
 import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
 export default {
     data() {
@@ -194,10 +195,17 @@ export default {
                 console.log("🚩 ~ exportFavourites ~ favourites 👇\n", favourites)
                 if (favourites) {
                     const parsedFavourites = JSON.parse(favourites)
-                    const jsonFavourites = JSON.stringify(parsedFavourites)
-                    const utf8Favourites = new TextEncoder().encode(jsonFavourites)
-                    const base64Favourites = btoa(String.fromCharCode(...utf8Favourites))
-                    const encodedFavourites = encodeURIComponent(base64Favourites)
+                    const filteredFavourites = parsedFavourites.map(item => {
+                        return {
+                            dir: item.dir,
+                            laststation: item.laststation,
+                            routeid: item.routeid,
+                            routename: item.routename
+                        }
+                    })
+                    const jsonFavourites = JSON.stringify(filteredFavourites)
+                    const compressedFavourites = LZUTF8.compress(jsonFavourites, { outputEncoding: 'Base64' })
+                    const encodedFavourites = encodeURIComponent(compressedFavourites)
                     const exportUrl = `${window.location.hostname}/import?data=${encodedFavourites}`
                     this.dataExportStatus = true
                     this.dataExportResult = exportUrl

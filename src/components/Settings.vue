@@ -70,7 +70,7 @@
                     <div>您可以直接使用该链接来导入数据</div>
                     <v-textarea label="数据链接" v-model="dataExportResult" readonly hide-details></v-textarea>
                     <div>
-                        <v-btn color="blue" class="ml-auto" @click="handleCopy(dataExportResult)" rounded="xl">
+                        <v-btn color="primary" class="ml-auto" @click="handleCopy(dataExportResult)" rounded="xl">
                             <template v-slot:prepend>
                                 <v-icon>ri:file-copy-line</v-icon>
                             </template>

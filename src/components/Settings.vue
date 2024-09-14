@@ -29,13 +29,13 @@
                     </v-avatar>
                 </template>
             </v-list-item>
-            <!-- <v-list-item title="关于应用" class="w-full">
+            <v-list-item title="关于应用" class="w-full" @click="aboutDialog = true">
                 <template v-slot:prepend>
                     <v-avatar color="brown">
                         <v-icon icon="ri:information-fill" />
                     </v-avatar>
                 </template>
-            </v-list-item> -->
+            </v-list-item>
         </v-card-text>
     </v-card>
     <v-dialog v-model="forceUpdateDialog">
@@ -95,9 +95,20 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+    <v-dialog v-model="aboutDialog">
+        <v-card :title="aboutData.title" :subtitle="aboutData.subtitle">
+            <v-card-text class="flex flex-col gap-2">
+                <div v-for="(item, index) in aboutData.description" :key="index" v-html="item"></div>
+            </v-card-text>
+            <v-card-actions>
+                <v-btn color="blue" text @click="aboutDialog = false">关闭</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 <script>
 import LZUTF8 from 'lzutf8-light'
+import aboutData from '@/assets/aboutData.json'
 import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
 export default {
     data() {
@@ -118,10 +129,9 @@ export default {
             dataExportResult: '',
             // 清除数据
             wipeDataDialog: false,
-            snackbar: {
-                text: '',
-                open: false
-            },
+            // 关于应用对话框
+            aboutDialog: false,
+            aboutData
         }
     },
     beforeRouteLeave(to, from, next) {
@@ -129,6 +139,7 @@ export default {
         this.dataImportDialog = false
         this.dataExportDialog = false
         this.wipeDataDialog = false
+        this.aboutDialog = false
         next()
     },
     methods: {

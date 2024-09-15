@@ -1,6 +1,18 @@
 <template>
     <v-card title="设置">
         <v-card-text class="flex flex-col justify-between align-center gap-4 w-full">
+            <v-list-item title="注意路面提醒" class="w-full">
+                <template v-slot:prepend>
+                    <v-avatar color="brown">
+                        <v-icon>ri:walk-fill</v-icon>
+                    </v-avatar>
+                </template>
+                <template v-slot:append>
+                    <v-switch hide-details color="brown" inline density="compact" v-model="headsUpNotifySetting"
+                        @change="updateHeadsUpNotifySetting"></v-switch>
+                </template>
+            </v-list-item>
+
             <v-list-item title="刷新缓存" class="w-full" @click="refreshCache()">
                 <template v-slot:prepend>
                     <v-avatar color="brown">
@@ -113,6 +125,7 @@ import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
 export default {
     data() {
         return {
+            headsUpNotifySetting: true,
             // 刷新缓存
             forceUpdateTitle: '刷新缓存中',
             forceUpdateDialog: false,
@@ -134,6 +147,12 @@ export default {
             aboutData
         }
     },
+    mounted() {
+        const storedHeadsUpNotifySetting = localStorage.getItem('stored_data_setting_headsUpNotify')
+        if (storedHeadsUpNotifySetting !== null) {
+            this.headsUpNotifySetting = JSON.parse(storedHeadsUpNotifySetting)
+        }
+    },
     beforeRouteLeave(to, from, next) {
         this.forceUpdateDialog = false
         this.dataImportDialog = false
@@ -143,6 +162,9 @@ export default {
         next()
     },
     methods: {
+        updateHeadsUpNotifySetting(value) {
+            localStorage.setItem('stored_data_setting_headsUpNotify', JSON.stringify(this.headsUpNotifySetting))
+        },
         async refreshCache(forceUpdate = true) {
             try {
                 this.forceUpdateTitle = '刷新缓存中'

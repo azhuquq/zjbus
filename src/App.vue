@@ -14,7 +14,6 @@
       <v-footer app class="p-0">
         <BottomNavigation v-if="showBottomNavigation" />
       </v-footer>
-
       <!-- 添加 v-dialog 显示正在获取数据 -->
       <v-dialog v-model="isFetchingData" persistent max-width="290">
         <v-card :title="fetchTitle">
@@ -30,11 +29,21 @@
       <v-snackbar v-model="snackbar.show" :timeout="3000">
         {{ snackbar.text }}
       </v-snackbar>
+      <v-snackbar v-model="headsUpNotify" :timeout="100000" location="top" close-on-content-click rounded="xl"
+        variant="tonal" color="deep-orange" vertical content-class="notify-snackbar" centered>
+        <div class="flex flex-col justify-center items-center text-center w-full gap-1">
+          <v-icon size="36">ri:arrow-up-line</v-icon>
+          <div class="text-xl font-bold">请抬头看路</div>
+          <div class="text-xs">轻触以关闭</div>
+        </div>
+      </v-snackbar>
+
     </v-app>
   </div>
 </template>
 
 <script setup>
+import useHeadsUpSensor from '@/utils/headsUpSensor'
 import { RouterView, useRoute } from 'vue-router'
 import BottomNavigation from './components/BottomNavigation.vue'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
@@ -50,6 +59,9 @@ const cachedPages = ref(['Home', 'Search', 'Notice', 'Favourite'])  // 指定需
 const isFetchingData = ref(false)
 const isLoading = ref(true)
 const isError = ref(false)
+
+const headsUpNotify = ref(true)
+// const { headsUpNotify, hideHeadsUp } = useHeadsUpSensor()
 
 // 添加 snackbar 的状态控制
 const snackbar = ref({
@@ -116,5 +128,11 @@ const retryFetchRoutes = () => {
 <style>
 .v-application {
   background-color: #F5F5F5;
+}
+
+.notify-snackbar {
+  .v-snackbar__content {
+    width: 100%;
+  }
 }
 </style>

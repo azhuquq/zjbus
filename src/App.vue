@@ -60,8 +60,8 @@ const isFetchingData = ref(false)
 const isLoading = ref(true)
 const isError = ref(false)
 
-const headsUpNotify = ref(true)
-// const { headsUpNotify, hideHeadsUp } = useHeadsUpSensor()
+// const headsUpNotify = ref(true)
+const { headsUpNotify, hideHeadsUp } = useHeadsUpSensor()
 
 // 添加 snackbar 的状态控制
 const snackbar = ref({

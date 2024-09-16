@@ -7,6 +7,7 @@ export default function useHeadsUpSensor() {
     let lastTime = 0
     let stepWindow = []
     let headsUpHasShown = false
+    let yAngle = 0 // 用来存储最新的设备角度
     const stepWindowDuration = 5000 // 步数检测窗口时长（5秒内）
     const angleThreshold = 30 // 角度阈值
     const buffer = 5 // 角度缓冲区
@@ -23,7 +24,6 @@ export default function useHeadsUpSensor() {
 
     // 显示提示
     const showHeadsUp = () => {
-        // 检查 sessionStorage 是否已有提示记录
         if (headsUpHasShown) {
             return
         }
@@ -37,7 +37,7 @@ export default function useHeadsUpSensor() {
     }
 
     // 检查是否需要显示“请抬头看路”提示
-    const checkForHeadsUp = (yAngle) => {
+    const checkForHeadsUp = () => {
         const currentTime = Date.now()
 
         // 移除超过时间窗口的步数
@@ -49,10 +49,9 @@ export default function useHeadsUpSensor() {
         }
     }
 
-    // 监听设备方向的回调函数
+    // 监听设备方向的回调函数，记录 yAngle 角度
     const onDeviceOrientation = (event) => {
-        const y = event.beta // 获取y轴的角度，范围是-180到180度
-        checkForHeadsUp(y)
+        yAngle = event.beta // 获取 y 轴的角度，范围是 -180 到 180 度
     }
 
     // 监听设备运动的回调函数
@@ -69,14 +68,19 @@ export default function useHeadsUpSensor() {
         const magnitude = Math.sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ)
 
         // 检测步伐变化：通过加速度峰值来识别
-        if (magnitude > 1.5 && currentTime - lastTime > 300) {
+        // 只在设备角度在符合条件时统计步伐
+        if (magnitude > 1.2 && currentTime - lastTime > 300 && Math.abs(yAngle) < angleThreshold + buffer) {
             steps += 1
             stepWindow.push(currentTime) // 记录步伐的时间
             lastTime = currentTime
+            console.log("🚩 ~ onDeviceMotion ~ stepWindow 👇\n", stepWindow)
         }
 
         // 更新上一次加速度
         lastAcceleration = smoothedAcceleration
+
+        // 检查是否显示提示
+        checkForHeadsUp()
     }
 
     // 启动传感器监听
@@ -95,7 +99,6 @@ export default function useHeadsUpSensor() {
     // 启动和停止传感器监听的生命周期控制
     onMounted(() => {
         const storedHeadsUpNotify = localStorage.getItem('stored_data_setting_headsUpNotify')
-        // 如果不存在，设置默认值为 true
         if (storedHeadsUpNotify === null) {
             localStorage.setItem('stored_data_setting_headsUpNotify', 'true')
             startSensors() // 启动传感器检测
@@ -108,6 +111,7 @@ export default function useHeadsUpSensor() {
             }
         }
     })
+
     onUnmounted(() => {
         stopSensors()
     })

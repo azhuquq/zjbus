@@ -42,9 +42,12 @@ const responseInterceptor = (response) => {
         try {
             // 如果响应数据是 Base64 字符串，先进行解码和解压缩
             const compressedData = response.data // 假设服务器返回的 data 是 base64 字符串
+            console.log("🚩 ~ responseInterceptor ~ compressedData 👇\n", compressedData)
             if (typeof compressedData === 'string') {
                 const binaryString = atob(compressedData) // Base64 解码
+                console.log("🚩 ~ responseInterceptor ~ binaryString 👇\n", binaryString)
                 const binaryData = new Uint8Array(binaryString.length)
+                console.log("🚩 ~ responseInterceptor ~ binaryData 👇\n", binaryData)
                 for (let i = 0; i < binaryString.length; i++) {
                     binaryData[i] = binaryString.charCodeAt(i)
                 }

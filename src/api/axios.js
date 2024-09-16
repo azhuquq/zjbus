@@ -38,6 +38,7 @@ const errorRequestInterceptor = (error) => {
 
 // 响应拦截器
 const responseInterceptor = (response) => {
+    console.log("🚩 ~ responseInterceptor ~ response 👇\n", response)
     if (response?.headers['is-compressed'] == 'true' || response?.headers['Is-Compressed:'] == 'true') {
         try {
             // 如果响应数据是 Base64 字符串，先进行解码和解压缩

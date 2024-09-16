@@ -14,23 +14,41 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/wechatapi': {
-        target: 'http://wechat.zhjgongjiao.com',
+        target: 'https://1307204859-cd38lzegqf.ap-guangzhou.tencentscf.com/wechatapi',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/wechatapi/, ''),
       },
       '/getallapi': {
-        target: 'http://wechat.zhjgongjiao.com',
+        target: 'https://1307204859-cd38lzegqf.ap-guangzhou.tencentscf.com/wechatapi',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/getallapi/, ''),
       },
       '/websiteapi': {
-        target: 'http://zhjgongjiao.com',
+        target: 'https://1307204859-cd38lzegqf.ap-guangzhou.tencentscf.com/websiteapi',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/websiteapi/, ''),
         headers: {
           Host: 'zhjgongjiao.com'
         }
       },
+      // '/wechatapi': {
+      //   target: 'http://wechat.zhjgongjiao.com',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/wechatapi/, ''),
+      // },
+      // '/getallapi': {
+      //   target: 'http://wechat.zhjgongjiao.com',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/getallapi/, ''),
+      // },
+      // '/websiteapi': {
+      //   target: 'http://zhjgongjiao.com',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/websiteapi/, ''),
+      //   headers: {
+      //     Host: 'zhjgongjiao.com'
+      //   }
+      // },
       '/webimg': {
         target: 'http://www.zhjgongjiao.com/uploads/',
         changeOrigin: true,

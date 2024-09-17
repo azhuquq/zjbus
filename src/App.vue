@@ -2,7 +2,7 @@
   <div id="app">
     <v-app color="grey-darken-3">
       <v-main>
-        <v-container fluid>
+        <v-container fluid class="p-2">
           <!-- 使用 keep-alive 缓存特定页面 -->
           <router-view v-slot="{ Component, route }">
             <keep-alive :include="cachedPages">

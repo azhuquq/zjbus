@@ -29,7 +29,7 @@
       <v-snackbar v-model="snackbar.show" :timeout="3000">
         {{ snackbar.text }}
       </v-snackbar>
-      <v-snackbar v-model="headsUpNotify" :timeout="10000" location="top" close-on-content-click rounded="xl"
+      <v-snackbar v-model="headsUpNotify" :timeout="5000" location="top" close-on-content-click rounded="xl"
         variant="tonal" color="deep-orange" vertical content-class="notify-snackbar" centered>
         <div class="flex flex-col justify-center items-center text-center w-full gap-1">
           <v-icon size="36">ri:arrow-up-line</v-icon>

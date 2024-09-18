@@ -34,7 +34,7 @@
         <div class="flex flex-col justify-center items-center text-center w-full gap-1">
           <v-icon size="36">ri:arrow-up-line</v-icon>
           <div class="text-xl font-bold">请抬头看路</div>
-          <div class="text-xs">轻触以关闭</div>
+          <div class="text-xs">轻触关闭提醒</div>
         </div>
       </v-snackbar>
 

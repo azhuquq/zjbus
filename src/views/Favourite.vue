@@ -165,6 +165,7 @@ export default {
                         this.findNearestStopForAllRoutes(userLat, userLng)
                         this.isLocationLoaded = true // 成功获取位置后标记为true
                         if (!this.locationTimer) {
+                            console.log("locationTimer setting")
                             this.setupLocationTimer() // 开始定期刷新位置
                         }
                     },
@@ -258,7 +259,7 @@ export default {
         setupLocationTimer() {
             this.locationTimer = setInterval(() => {
                 this.requestLocation()
-            }, 3000)
+            }, 5000)
         },
         clearTimers() {
             this.timers.forEach(timer => clearInterval(timer))

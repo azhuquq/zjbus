@@ -23,10 +23,6 @@
 <script>
 export default {
     name: 'Debugger',
-    goHome() {
-        this.$router.push('/')
-        this.$router.go(0)
-    },
     mounted() {
         // 初始化时从 localStorage 读取状态
         this.tool.forEach(toolItem => {
@@ -42,6 +38,10 @@ export default {
         }
     },
     methods: {
+        goHome() {
+            this.$router.push('/')
+            this.$router.go(0)
+        },
         // 当点击时切换 localStorage 中对应的值
         toggleTool(item) {
             item.active = !item.active

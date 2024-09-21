@@ -164,7 +164,9 @@ export default {
                         const userLng = position.coords.longitude
                         this.findNearestStopForAllRoutes(userLat, userLng)
                         this.isLocationLoaded = true // 成功获取位置后标记为true
-                        this.setupLocationTimer() // 开始定期刷新位置
+                        if (!this.locationTimer) {
+                            this.setupLocationTimer() // 开始定期刷新位置
+                        }
                     },
                     error => {
                         console.error("无法获取用户位置", error)

@@ -1,6 +1,6 @@
 {
     "title": "关于“湛江实时公交”",
-    "subtitle": "阿朱@2024-09-14",
+    "subtitle": "阿朱@2024-09-21",
     "description": [
         "本项目由独立开发者阿朱基于Vue3、Vite、Vuetify、TailwindCSS、Iconify、Vercel、腾讯云函数服务 等框架/服务开发部署，旨在为自己及他人提供便利，功德无量。",
         "部分功能和设计参考了<a href='http://hkbus.app'>hkbus.app</a>，完全免费，无广告（除不可抗力因素外）。",
@@ -8,6 +8,7 @@
         "阿朱官网: <a href='http://azhuquq.com'>azhuquq.com</a>",
         "微信: azhuquq (欢迎交流！)",
         "邮箱: i@azhuquq.com",
+        "浏览器定位不同于地图App定位，可能会出现较大误差，请注意。",
         "由于iOS WebKit限制，“注意路面提醒”在苹果设备上无法正常显示。",
         "尝试过但无法实现的功能: 规划换乘路线(算法复杂)、附近站点(官方数据混乱)。",
         "<a href='https://beian.miit.gov.cn/'>粤ICP备2022062723号</a>",

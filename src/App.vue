@@ -48,8 +48,27 @@ import { RouterView, useRoute } from 'vue-router'
 import BottomNavigation from './components/BottomNavigation.vue'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { fetchRoutesIfNeeded } from '@/utils/fetchAllRoutes'
+// 调试工具
+const useEruda = localStorage.getItem('stored_data_useEruda') === 'true'
+const useVconsole = localStorage.getItem('stored_data_useVconsole') === 'true'
+if (useEruda) {
+  const script = document.createElement('script');
+  script.src = '//cdn.jsdelivr.net/npm/eruda';
+  script.onload = () => eruda.init();
+  document.body.appendChild(script);
+}
+
+if (useVconsole) {
+  const script = document.createElement('script');
+  script.src = '//unpkg.com/vconsole@latest/dist/vconsole.min.js';
+  script.onload = () => new VConsole();
+  document.body.appendChild(script);
+}
+
 const route = useRoute()
+
 // 控制底部导航的显示逻辑
+
 const showBottomNavigation = computed(() => {
   return [null, '/', '/search', '/notice', '/favourite'].includes(route.path)
 })

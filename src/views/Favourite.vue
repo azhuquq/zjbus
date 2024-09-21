@@ -3,12 +3,14 @@
         <v-app-bar elevation="1">
             <v-app-bar-title>收藏路线</v-app-bar-title>
             <template v-slot:append>
+                <div v-if="!isLocationLoaded && favourites.length != 0">
+                    <v-btn icon="ri:map-pin-line" @click="requestLocation()"></v-btn>
+                </div>
+
                 <div v-if="isRefreshingStat" class="me-2">
-                    <!-- 显示进度圆圈 -->
                     <v-progress-circular indeterminate />
                 </div>
                 <div v-else>
-                    <!-- 显示刷新按钮 -->
                     <v-btn icon="ri:refresh-line" @click="refresh"></v-btn>
                 </div>
             </template>
@@ -43,6 +45,12 @@
                                 <v-icon>ri:navigation-line</v-icon>
                             </div>
                         </template>
+                        <template v-slot:subtitle v-if="per.nearestStop">
+                            {{
+                                `离您最近：${per.nearestStop.stationNo} ${per.nearestStop.stationName}`
+                            }}
+                        </template>
+
                         <v-card-text>
                             <!-- 初始化标志变量，默认没有活动车辆 -->
                             <template v-if="item.isLoaded">
@@ -55,7 +63,7 @@
                                                     <v-chip class="p-2 me-2" color="green" label>
                                                         <v-icon icon="ri:bus-line" start />
                                                         {{ `${fixNo(bus.stationno)} ${bus.sitename}
-                                                        ${fixSpeed(bus.speed)} km/h ${bus.busplate}` }}
+                                                        ${fixSpeed(bus.speed)} km/h` }}
                                                     </v-chip>
                                                 </div>
                                             </div>
@@ -86,7 +94,6 @@
                             </div>
                         </v-card-text>
                     </v-card>
-
                 </div>
             </v-card>
         </div>
@@ -103,11 +110,13 @@ export default {
         return {
             favourites: [], // 用于存储收藏的线路信息
             mergedFavourites: [], // 存储合并后的收藏路线
-            firstLoad: true, // 新增标志：判断是否首次加载
+            firstLoad: true, // 标志判断是否首次加载
             isRefreshing: false, // 标志是否正在刷新
             hasError: false, // 标志是否有网络错误
             favouritesSnapshot: null,
-            timers: [] // 保存定时器的数组
+            timers: [],
+            isLocationLoaded: false,
+            locationTimer: null,
         }
     },
     computed: {
@@ -116,7 +125,7 @@ export default {
             return this.mergedFavourites.some(fav => fav.isRefreshing)
         },
         hasErrorStat() {
-            // 检查 mergedFavourites 中是否有任何项目出现错误
+            // 检查 mergedFavourites 中是否有任何项 目出现错误
             return this.mergedFavourites.some(fav => fav.isError)
         }
     },
@@ -134,17 +143,106 @@ export default {
             this.mergeFavourites() // 如果发生变化，重新合并收藏路线
             this.refresh() // 触发刷新
         }
+        this.requestLocation()
         this.setupTimers()
     },
     deactivated() {
-        // 页面不激活时，清除所有定时器，停止刷新
         this.clearTimers()
     },
     beforeUnmount() {
-        // 清除所有定时器，避免内存泄漏
         this.clearTimers()
     },
     methods: {
+        requestLocation() {
+            console.log("requestLocation 被调用了")
+            if (navigator.geolocation) {
+                console.log("navigator.geolocation 存在")
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        console.log("成功获取用户位置", position)
+                        const userLat = position.coords.latitude
+                        const userLng = position.coords.longitude
+                        this.findNearestStopForAllRoutes(userLat, userLng)
+                        this.isLocationLoaded = true // 成功获取位置后标记为true
+                        this.setupLocationTimer() // 开始定期刷新位置
+                    },
+                    error => {
+                        console.error("无法获取用户位置", error)
+                    }
+                )
+            } else {
+                console.error("浏览器不支持地理位置获取")
+            }
+        },
+        findNearestStopForAllRoutes(userLat, userLng) {
+            const favouriteRoutes = this.mergedFavourites // 使用 mergedFavourites
+            const allRoutes = JSON.parse(localStorage.getItem('stored_data_routes')) || {}
+
+            // 对每条路线查找最近车站
+            favouriteRoutes.forEach(route => {
+                route.directions.forEach(direction => {
+                    this.findNearestStopForDirection(route, direction, allRoutes, userLat, userLng)
+                })
+            })
+        },
+        findNearestStopForDirection(route, direction, allRoutes, userLat, userLng) {
+            const routeData = allRoutes.lineinfos.find(line => line.roadid === direction.routeid && line.roadstatus === direction.dir)
+            if (routeData) {
+                let nearestStop = null
+                let minDistance = Infinity
+                routeData.busstation.forEach(station => {
+                    const { lat, lng } = this.parseLatLng(station.lng, station.lat)
+                    // console.log("🚩 ~ findNearestStopForDirection ~ lat, lng 👇\n", station, lat, lng)
+                    const distance = this.calculateDistance(userLat, userLng, parseFloat(lat), parseFloat(lng))
+                    if (distance < minDistance) {
+                        minDistance = distance
+                        nearestStop = {
+                            routeName: route.routename,
+                            stationName: station.stationname,
+                            stationNo: station.stationno,
+                            distance: distance.toFixed(2),
+                            direction: direction.dir
+                        }
+                    }
+                })
+                // 将最近的车站存储到 direction 对象中
+                direction.nearestStop = nearestStop
+            }
+        },
+        calculateDistance(lat1, lng1, lat2, lng2) {
+            const toRad = (value) => (value * Math.PI) / 180
+            const R = 6371 // 地球半径，单位：公里
+            const dLat = toRad(lat2 - lat1)
+            const dLng = toRad(lng2 - lng1)
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2)
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+            const distance = R * c // 距离，单位：公里
+            return distance
+        },
+        parseLatLng(lngStr, latStr) {
+            let lng = parseFloat(lngStr.slice(1)) / 100
+            let lngDegrees = Math.floor(lng)
+            let lngMinutes = (lng - lngDegrees) * 100 / 60
+            let lngFinal = lngDegrees + lngMinutes
+            if (!lngStr.startsWith("E")) {
+                lngFinal = -lngFinal
+            }
+
+            let lat = parseFloat(latStr.slice(1)) / 100
+            let latDegrees = Math.floor(lat)
+            let latMinutes = (lat - latDegrees) * 100 / 60
+            let latFinal = latDegrees + latMinutes
+            if (!latStr.startsWith("N")) {
+                latFinal = -latFinal
+            }
+            return {
+                lng: lngFinal.toFixed(6),
+                lat: latFinal.toFixed(6)
+            }
+        },
         setupTimers() {
             // 为每个合并后的路线设置定时刷新
             this.mergedFavourites.forEach((fav, index) => {
@@ -155,10 +253,18 @@ export default {
                 this.timers.push(timer) // 将定时器保存到 timers 数组中
             })
         },
+        setupLocationTimer() {
+            this.locationTimer = setInterval(() => {
+                this.requestLocation()
+            }, 3000)
+        },
         clearTimers() {
-            // 清除所有定时器
             this.timers.forEach(timer => clearInterval(timer))
-            this.timers = [] // 清空定时器数组
+            this.timers = []
+            if (this.locationTimer) {
+                clearInterval(this.locationTimer) // 清除位置刷新定时器
+                this.locationTimer = null
+            }
         },
         mergeFavourites() {
             const grouped = {}
@@ -213,7 +319,6 @@ export default {
         async refresh() {
             this.isRefreshing = true
             let errorOccurred = false
-
             for (let i = 0; i < this.mergedFavourites.length; i++) {
                 const fav = this.mergedFavourites[i]
                 fav.isRefreshing = true // 开始刷新
@@ -235,7 +340,6 @@ export default {
                     fav.isRefreshing = false // 刷新完成
                 }
             }
-
             this.hasError = errorOccurred
             this.firstLoad = false
             this.isRefreshing = false

@@ -73,7 +73,7 @@ export default function useHeadsUpSensor() {
             steps += 1
             stepWindow.push(currentTime) // 记录步伐的时间
             lastTime = currentTime
-            console.log("🚩 ~ onDeviceMotion ~ stepWindow 👇\n", stepWindow)
+            // console.log("🚩 ~ onDeviceMotion ~ stepWindow 👇\n", stepWindow)
         }
 
         // 更新上一次加速度

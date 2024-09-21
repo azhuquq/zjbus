@@ -40,7 +40,6 @@ export default {
     methods: {
         goHome() {
             this.$router.push('/')
-            this.$router.go(0)
         },
         // 当点击时切换 localStorage 中对应的值
         toggleTool(item) {
